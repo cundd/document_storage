@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2019-03-06T12:33:32Z" product-name="document_storage">
+		<header/>
+		<body>
+			<trans-unit id="tx_documentstorage_domain_model_document">
+				<source>Document</source>
+			</trans-unit>
+			<trans-unit id="tx_documentstorage_domain_model_document.id">
+				<source>Id</source>
+			</trans-unit>
+			<trans-unit id="tx_documentstorage_domain_model_document.db">
+				<source>Db</source>
+			</trans-unit>
+			<trans-unit id="tx_documentstorage_domain_model_document.data_protected">
+				<source>Data Protected</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

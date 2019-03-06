@@ -1,0 +1,29 @@
+{
+    "name": "cundd/document-storage",
+    "type": "typo3-cms-extension",
+    "description": "",
+    "authors": [
+        {
+            "name": "Daniel Corn",
+            "role": "Developer"
+        }
+    ],
+    "version": "1.0.0",
+    "require": {
+        "typo3/cms-core": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cundd\\DocumentStorage\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Cundd\\DocumentStorage\\Tests\\": "Tests"
+        }
+    },
+    "replace": {
+        "document_storage": "self.version",
+        "typo3-ter/document-storage": "self.version"
+    }
+}
