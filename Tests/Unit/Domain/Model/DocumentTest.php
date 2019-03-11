@@ -1,101 +1,270 @@
 <?php
+declare(strict_types=1);
+
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Model;
 
+use Cundd\DocumentStorage\Domain\Model\Document;
+use PHPUnit\Framework\TestCase;
+
 /**
- * Test case.
- *
- * @author Daniel Corn <info@cundd.net>
+ * Document test case
  */
-class DocumentTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
+class DocumentTest extends TestCase
 {
     /**
      * @var \Cundd\DocumentStorage\Domain\Model\Document
      */
-    protected $subject = null;
+    protected $fixture = null;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
-        $this->subject = new \Cundd\DocumentStorage\Domain\Model\Document();
+        $this->fixture = new Document();
+        $this->fixture->setDataProtected(
+            json_encode(
+                [
+                    'firstName' => 'Daniel',
+                    'lastName'  => 'Corn',
+                    'address'   => [
+                        'street'  => 'Bingstreet 1',
+                        'city'    => 'Feldkirch',
+                        'zip'     => '6800',
+                        'country' => 'Austria',
+                    ],
+                ]
+            )
+        );
     }
 
-    protected function tearDown()
+    public function tearDown(): void
     {
+        unset($this->fixture);
         parent::tearDown();
     }
 
     /**
      * @test
      */
-    public function getIdReturnsInitialValueForString()
+    public function setContentTest()
     {
-        self::assertSame(
-            '',
-            $this->subject->getId()
-        );
+        $content = '{"data": "The new test content"}';
+        $this->fixture->setDataProtected($content);
+        $this->assertEquals($content, $this->fixture->getDataProtected());
     }
 
     /**
      * @test
      */
-    public function setIdForStringSetsId()
+    public function getInitialContentTest()
     {
-        $this->subject->setId('Conceived at T3CON10');
-
-        self::assertAttributeEquals(
-            'Conceived at T3CON10',
-            'id',
-            $this->subject
-        );
+        $model = new Document();
+        $result = $model->getDataProtected();
+        $this->assertNull($result);
     }
 
     /**
      * @test
      */
-    public function getDbReturnsInitialValueForString()
+    public function setDbTest()
     {
-        self::assertSame(
-            '',
-            $this->subject->getDb()
-        );
+        $db = 'testdb';
+        $this->fixture->setDb($db);
+        $this->assertEquals($db, $this->fixture->getDb());
+
+        $db = 'testdb1';
+        $this->fixture->setDb($db);
+        $this->assertEquals($db, $this->fixture->getDb());
+
+        $db = 'test1db2';
+        $this->fixture->setDb($db);
+        $this->assertEquals($db, $this->fixture->getDb());
+    }
+
+    /**
+     * @expectException \Cundd\Rest\Domain\Exception\InvalidDatabaseNameException
+     */
+    public function setInvalidDbTest()
+    {
+        $db = 'test-db';
+        $this->fixture->setDb($db);
     }
 
     /**
      * @test
      */
-    public function setDbForStringSetsDb()
+    public function getInitialDbTest()
     {
-        $this->subject->setDb('Conceived at T3CON10');
-
-        self::assertAttributeEquals(
-            'Conceived at T3CON10',
-            'db',
-            $this->subject
-        );
+        $result = $this->fixture->getDb();
+        $this->assertEquals('', $result);
     }
 
     /**
      * @test
      */
-    public function getDataProtectedReturnsInitialValueForString()
+    public function changeGuidTest()
     {
-        self::assertSame(
-            '',
-            $this->subject->getDataProtected()
-        );
+        $id = (string)time();
+        $database = 'testdb';
+        $this->fixture->setId($id);
+        $this->fixture->setDb($database);
+        $this->assertEquals($database . '/' . $id, $this->fixture->getGuid());
     }
 
     /**
      * @test
      */
-    public function setDataProtectedForStringSetsDataProtected()
+    public function getInitialGuidTest()
     {
-        $this->subject->setDataProtected('Conceived at T3CON10');
+        $result = $this->fixture->getGuid();
+        $this->assertNull($result);
+    }
 
-        self::assertAttributeEquals(
-            'Conceived at T3CON10',
-            'dataProtected',
-            $this->subject
-        );
+    /**
+     * @test
+     */
+    public function valueForKeyTest()
+    {
+        $key = 'firstName';
+        $result = $this->fixture->valueForKey($key);
+        $this->assertEquals('Daniel', $result);
+    }
+
+    /**
+     * @test
+     */
+    public function valueForKeyPathTest()
+    {
+        $keyPath = 'address.street';
+        $result = $this->fixture->valueForKeyPath($keyPath);
+        $this->assertEquals('Bingstreet 1', $result);
+    }
+
+    /**
+     * @test
+     */
+    public function valueForKeyPathUndefinedTest()
+    {
+        $keyPath = 'address.street.direction';
+        $result = $this->fixture->valueForKeyPath($keyPath);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @test
+     */
+    public function valueForKeyPathUndefinedWithDefaultTest()
+    {
+        $default = 'south';
+        $keyPath = 'address.street.direction';
+        $result = $this->fixture->valueForKeyPath($keyPath, $default);
+        $this->assertSame($default, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function valueForUndefinedKeyTest()
+    {
+        $undefinedKey = 'undefined';
+        $result = $this->fixture->valueForUndefinedKey($undefinedKey);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @test
+     */
+    public function setValueForKeyTest()
+    {
+        $function = 'Superman';
+        $key = 'function';
+
+        $this->fixture->setValueForKey($key, $function);
+        $this->assertEquals($function, $this->fixture->valueForKey($key));
+    }
+
+    //	/**
+    //	 * @test
+    //	 */
+    //	public function setValueForKeyPathTest() {
+    //		$value = 'Antarctic';
+    //		$keyPath = 'address.country';
+    //		$this->fixture->setValueForKeyPath($value, $keyPath);
+    //		$this->assertEquals($value, $this->fixture->valueForKeyPath($keyPath));
+    //	}
+
+    /**
+     * @test
+     */
+    public function offsetExistsTest()
+    {
+        $this->assertTrue($this->fixture->offsetExists('firstName'));
+    }
+
+    /**
+     * @test
+     */
+    public function offsetExistsArrayTest()
+    {
+        $this->assertTrue(isset($this->fixture['firstName']));
+    }
+
+    /**
+     * @test
+     */
+    public function offsetGetTest()
+    {
+        $this->assertEquals('Daniel', $this->fixture->offsetGet('firstName'));
+    }
+
+    /**
+     * @test
+     */
+    public function offsetGetArrayTest()
+    {
+        $this->assertEquals('Daniel', $this->fixture['firstName']);
+    }
+
+    /**
+     * @test
+     */
+    public function offsetSetTest()
+    {
+        $function = 'Superman';
+        $key = 'function';
+
+        $this->fixture->offsetSet($key, $function);
+        $this->assertEquals($function, $this->fixture->valueForKey($key));
+    }
+
+    /**
+     * @test
+     */
+    public function offsetSetArrayTest()
+    {
+        $function = 'Superman';
+        $key = 'function';
+
+        $this->fixture[$key] = $function;
+        $this->assertEquals($function, $this->fixture->valueForKey($key));
+    }
+
+    /**
+     * @test
+     */
+    public function offsetUnsetTest()
+    {
+        $key = 'firstName';
+        $this->fixture->offsetUnset($key);
+        $this->assertNull($this->fixture->valueForKey($key));
+    }
+
+    /**
+     * @test
+     */
+    public function offsetUnsetArrayTest()
+    {
+        $key = 'firstName';
+        unset($this->fixture[$key]);
+        $this->assertNull($this->fixture->valueForKey($key));
     }
 }

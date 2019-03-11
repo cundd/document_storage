@@ -1,0 +1,28 @@
+<phpunit
+        backupGlobals="true"
+        backupStaticAttributes="false"
+        colors="true"
+        convertErrorsToExceptions="false"
+        convertWarningsToExceptions="false"
+        forceCoversAnnotation="false"
+        processIsolation="false"
+        stopOnError="false"
+        stopOnFailure="false"
+        stopOnIncomplete="false"
+        stopOnSkipped="false"
+        verbose="false"
+        bootstrap="Bootstrap.php"
+>
+
+    <testsuites>
+        <testsuite name="Unit tests">
+            <directory>./Unit</directory>
+        </testsuite>
+        <!--<testsuite name="Functional tests">-->
+        <!--<directory>./Functional</directory>-->
+        <!--</testsuite>-->
+        <!--<testsuite name="Integration tests">-->
+        <!--<directory>./Integration</directory>-->
+        <!--</testsuite>-->
+    </testsuites>
+</phpunit>

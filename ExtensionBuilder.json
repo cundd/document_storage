@@ -20,8 +20,8 @@
                 "name": "Document",
                 "objectsettings": {
                     "addDeletedField": true,
-                    "addHiddenField": true,
-                    "addStarttimeEndtimeFields": true,
+                    "addHiddenField": false,
+                    "addStarttimeEndtimeFields": false,
                     "aggregateRoot": true,
                     "categorizable": false,
                     "description": "Document",
@@ -81,8 +81,8 @@
             "category": "services",
             "custom_category": "",
             "dependsOn": "typo3 => 9.5.0-9.5.99\n",
-            "disableLocalization": false,
-            "disableVersioning": false,
+            "disableLocalization": true,
+            "disableVersioning": true,
             "skipGenerateDocumentationTemplate": false,
             "sourceLanguage": "en",
             "state": "alpha",
@@ -91,8 +91,8 @@
         },
         "extensionKey": "document_storage",
         "name": "Document Storage",
-        "originalExtensionKey": "",
-        "originalVendorName": "",
+        "originalExtensionKey": "document_storage",
+        "originalVendorName": "Cundd",
         "persons": [
             {
                 "company": "",
@@ -106,7 +106,7 @@
     },
     "wires": [],
     "log": {
-        "last_modified": "2019-03-06 12:33",
+        "last_modified": "2019-03-08 04:06",
         "extension_builder_version": "9.10.0",
         "be_user": " (1)"
     }

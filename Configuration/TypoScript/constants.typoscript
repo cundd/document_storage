@@ -1,0 +1,9 @@
+## Define custom categories
+# customsubcategory=rest=REST
+
+plugin.tx_document_storage.settings {
+    # cat=Document Storage/rest/a; type=options[deny,allow,require]; label=Read access for Documents (deny, allow, require)
+    read = deny
+    # cat=Document Storage/rest/b; type=options[deny,allow,require]; label=Write access for Documents (deny, allow, require)
+    write = deny
+}

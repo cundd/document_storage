@@ -1,0 +1,22 @@
+plugin.tx_rest.settings.paths {
+    documents {
+        path = documents
+        read = {$plugin.tx_document_storage.settings.read}
+        write = {$plugin.tx_document_storage.settings.write}
+        cacheLifetime = -1
+        handlerClass = \Cundd\DocumentStorage\Rest\DocumentHandler
+    }
+}
+
+config.tx_extbase.persistence {
+    classes {
+        Cundd\DocumentStorage\Domain\Model\Document {
+            mapping {
+                columns {
+                    tstamp.mapOnProperty = modificationTime
+                    crdate.mapOnProperty = creationTime
+                }
+            }
+        }
+    }
+}
