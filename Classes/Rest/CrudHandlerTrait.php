@@ -25,7 +25,7 @@ trait CrudHandlerTrait
 
     abstract protected function getLogger(): LoggerInterface;
 
-    public function crudGetProperty(
+    public function performGetProperty(
         DataProviderInterface $dataProvider,
         RestRequestInterface $request,
         $identifier,
@@ -40,7 +40,7 @@ trait CrudHandlerTrait
         return $dataProvider->getModelProperty($model, $propertyKey);
     }
 
-    public function crudShow(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
+    public function performShow(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
     {
         $resourceType = $request->getResourceType();
         $model = $dataProvider->fetchModel($identifier, $resourceType);
@@ -52,17 +52,13 @@ trait CrudHandlerTrait
         return $this->prepareResult($request, $result);
     }
 
-    public function crudCreate(DataProviderInterface $dataProvider, RestRequestInterface $request)
+    public function performCreate(DataProviderInterface $dataProvider, RestRequestInterface $request)
     {
         $data = $request->getSentData();
         $this->getLogger()->logRequest('create request', ['body' => $data]);
 
         if (null === $data) {
             return $this->responseFactory->createErrorResponse('Invalid or missing payload', 400, $request);
-        }
-
-        if (isset($data['__identity'])) {
-            return $this->crudUpdate($dataProvider, $request, $data['__identity']);
         }
 
         $resourceType = $request->getResourceType();
@@ -79,7 +75,7 @@ trait CrudHandlerTrait
         return $this->prepareResult($request, $result);
     }
 
-    public function crudUpdate(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
+    public function performUpdate(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
     {
         $resourceType = $request->getResourceType();
 
@@ -106,7 +102,7 @@ trait CrudHandlerTrait
         return $this->prepareResult($request, $result);
     }
 
-    public function crudDelete(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
+    public function performDelete(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
     {
         $resourceType = $request->getResourceType();
         $this->getLogger()->logRequest('delete request', ['identifier' => $identifier]);
@@ -119,7 +115,7 @@ trait CrudHandlerTrait
         return $this->responseFactory->createSuccessResponse('Deleted', 200, $request);
     }
 
-    public function crudListAll(DataProviderInterface $dataProvider, RestRequestInterface $request)
+    public function performListAll(DataProviderInterface $dataProvider, RestRequestInterface $request)
     {
         $resourceType = $request->getResourceType();
         $allModels = $dataProvider->fetchAllModels($resourceType);
@@ -131,12 +127,12 @@ trait CrudHandlerTrait
         );
     }
 
-    public function crudCountAll(DataProviderInterface $dataProvider, RestRequestInterface $request)
+    public function performCountAll(DataProviderInterface $dataProvider, RestRequestInterface $request)
     {
         return $dataProvider->countAllModels($request->getResourceType());
     }
 
-    public function crudOptions(
+    public function performOptions(
         /** @noinspection PhpUnusedParameterInspection */
         ?DataProviderInterface $dataProvider = null
     ) {

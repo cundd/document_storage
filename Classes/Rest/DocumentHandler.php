@@ -6,7 +6,6 @@ namespace Cundd\DocumentStorage\Rest;
 use Cundd\DocumentStorage\Persistence\DataMapper;
 use Cundd\Rest\DataProvider\ExtractorInterface;
 use Cundd\Rest\DataProvider\IdentityProviderInterface;
-use Cundd\Rest\Handler\CrudHandler;
 use Cundd\Rest\Handler\HandlerInterface;
 use Cundd\Rest\Http\RestRequestInterface;
 use Cundd\Rest\Log\LoggerInterface;
@@ -39,11 +38,6 @@ class DocumentHandler implements HandlerInterface
     private $logger;
 
     /**
-     * @var CrudHandler
-     */
-    private $concreteHandler;
-
-    /**
      * Handler constructor
      *
      * @param ObjectManagerInterface   $objectManager
@@ -58,7 +52,6 @@ class DocumentHandler implements HandlerInterface
         $this->objectManager = $objectManager;
         $this->responseFactory = $responseFactory;
         $this->logger = $logger;
-        $this->concreteHandler = $objectManager->get(CrudHandler::class);
     }
 
     protected function getLogger(): LoggerInterface
@@ -73,37 +66,37 @@ class DocumentHandler implements HandlerInterface
 
     public function getProperty(RestRequestInterface $request, string $databaseName, $identifier, $propertyKey)
     {
-        return $this->crudGetProperty($this->getDataProvider($databaseName), $request, $identifier, $propertyKey);
+        return $this->performGetProperty($this->getDataProvider($databaseName), $request, $identifier, $propertyKey);
     }
 
     public function show(RestRequestInterface $request, string $databaseName, $identifier)
     {
-        return $this->crudShow($this->getDataProvider($databaseName), $request, $identifier);
+        return $this->performShow($this->getDataProvider($databaseName), $request, $identifier);
     }
 
     public function create(RestRequestInterface $request, string $databaseName)
     {
-        return $this->crudCreate($this->getDataProvider($databaseName), $request);
+        return $this->performCreate($this->getDataProvider($databaseName), $request);
     }
 
     public function update(RestRequestInterface $request, string $databaseName, $identifier)
     {
-        return $this->crudUpdate($this->getDataProvider($databaseName), $request, $identifier);
+        return $this->performUpdate($this->getDataProvider($databaseName), $request, $identifier);
     }
 
     public function delete(RestRequestInterface $request, string $databaseName, $identifier)
     {
-        return $this->crudDelete($this->getDataProvider($databaseName), $request, $identifier);
+        return $this->performDelete($this->getDataProvider($databaseName), $request, $identifier);
     }
 
     public function listAll(RestRequestInterface $request, string $databaseName)
     {
-        return $this->crudListAll($this->getDataProvider($databaseName), $request);
+        return $this->performListAll($this->getDataProvider($databaseName), $request);
     }
 
     public function countAll(RestRequestInterface $request, string $databaseName)
     {
-        return $this->crudCountAll($this->getDataProvider($databaseName), $request);
+        return $this->performCountAll($this->getDataProvider($databaseName), $request);
     }
 
     public function info(RestRequestInterface $request)
@@ -113,7 +106,7 @@ class DocumentHandler implements HandlerInterface
 
     public function options()
     {
-        return $this->crudOptions();
+        return $this->performOptions();
     }
 
     public function configureRoutes(RouterInterface $router, RestRequestInterface $request)
