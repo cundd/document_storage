@@ -25,11 +25,18 @@ trait CrudHandlerTrait
 
     abstract protected function getLogger(): LoggerInterface;
 
+    /**
+     * @param DocumentDataProvider|DataProviderInterface $dataProvider
+     * @param RestRequestInterface                       $request
+     * @param                                            $identifier
+     * @param                                            $propertyKey
+     * @return mixed|\Psr\Http\Message\ResponseInterface
+     */
     public function performGetProperty(
         DataProviderInterface $dataProvider,
         RestRequestInterface $request,
-        $identifier,
-        $propertyKey
+        string $identifier,
+        string $propertyKey
     ) {
         $resourceType = $request->getResourceType();
         $model = $dataProvider->fetchModel($identifier, $resourceType);
@@ -40,8 +47,17 @@ trait CrudHandlerTrait
         return $dataProvider->getModelProperty($model, $propertyKey);
     }
 
-    public function performShow(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
-    {
+    /**
+     * @param DocumentDataProvider|DataProviderInterface $dataProvider
+     * @param RestRequestInterface                       $request
+     * @param string                                     $identifier
+     * @return \Psr\Http\Message\ResponseInterface|array
+     */
+    public function performShow(
+        DataProviderInterface $dataProvider,
+        RestRequestInterface $request,
+        string $identifier
+    ) {
         $resourceType = $request->getResourceType();
         $model = $dataProvider->fetchModel($identifier, $resourceType);
         if (!$model) {
@@ -52,9 +68,17 @@ trait CrudHandlerTrait
         return $this->prepareResult($request, $result);
     }
 
-    public function performCreate(DataProviderInterface $dataProvider, RestRequestInterface $request)
-    {
-        $data = $request->getSentData();
+    /**
+     * @param DocumentDataProvider|DataProviderInterface $dataProvider
+     * @param RestRequestInterface                       $request
+     * @param array|null                                 $data
+     * @return \Psr\Http\Message\ResponseInterface|array
+     */
+    public function performCreate(
+        DataProviderInterface $dataProvider,
+        RestRequestInterface $request,
+        ?array $data
+    ) {
         $this->getLogger()->logRequest('create request', ['body' => $data]);
 
         if (null === $data) {
@@ -75,12 +99,26 @@ trait CrudHandlerTrait
         return $this->prepareResult($request, $result);
     }
 
-    public function performUpdate(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
-    {
+    /**
+     * @param DocumentDataProvider|DataProviderInterface $dataProvider
+     * @param RestRequestInterface                       $request
+     * @param string                                     $identifier
+     * @param array|null                                 $data
+     * @return \Psr\Http\Message\ResponseInterface|array
+     */
+    public function performUpdate(
+        DataProviderInterface $dataProvider,
+        RestRequestInterface $request,
+        string $identifier,
+        ?array $data
+    ) {
         $resourceType = $request->getResourceType();
 
-        $data = $request->getSentData();
-        $data['__identity'] = $identifier;
+        $data[DocumentDataProvider::IDENTIFIER_PROPERTY] = $identifier;
+        if (!isset($data['id'])) {
+            $data['id'] = $identifier;
+        }
+
         $this->getLogger()->logRequest('update request', ['body' => $data]);
 
         // Make sure the object with the given identifier exists
@@ -102,8 +140,17 @@ trait CrudHandlerTrait
         return $this->prepareResult($request, $result);
     }
 
-    public function performDelete(DataProviderInterface $dataProvider, RestRequestInterface $request, $identifier)
-    {
+    /**
+     * @param DocumentDataProvider|DataProviderInterface $dataProvider
+     * @param RestRequestInterface                       $request
+     * @param string                                     $identifier
+     * @return \Psr\Http\Message\ResponseInterface|array
+     */
+    public function performDelete(
+        DataProviderInterface $dataProvider,
+        RestRequestInterface $request,
+        string $identifier
+    ) {
         $resourceType = $request->getResourceType();
         $this->getLogger()->logRequest('delete request', ['identifier' => $identifier]);
         $model = $dataProvider->fetchModel($identifier, $resourceType);
@@ -115,6 +162,11 @@ trait CrudHandlerTrait
         return $this->responseFactory->createSuccessResponse('Deleted', 200, $request);
     }
 
+    /**
+     * @param DocumentDataProvider|DataProviderInterface $dataProvider
+     * @param RestRequestInterface                       $request
+     * @return mixed
+     */
     public function performListAll(DataProviderInterface $dataProvider, RestRequestInterface $request)
     {
         $resourceType = $request->getResourceType();
@@ -127,11 +179,20 @@ trait CrudHandlerTrait
         );
     }
 
+    /**
+     * @param DocumentDataProvider|DataProviderInterface $dataProvider
+     * @param RestRequestInterface                       $request
+     * @return int
+     */
     public function performCountAll(DataProviderInterface $dataProvider, RestRequestInterface $request)
     {
         return $dataProvider->countAllModels($request->getResourceType());
     }
 
+    /**
+     * @param DataProviderInterface|null $dataProvider
+     * @return bool
+     */
     public function performOptions(
         /** @noinspection PhpUnusedParameterInspection */
         ?DataProviderInterface $dataProvider = null

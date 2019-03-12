@@ -17,6 +17,8 @@ use Cundd\Rest\ObjectManagerInterface;
 
 class DocumentDataProvider extends DataProvider implements DataProviderInterface
 {
+    public const IDENTIFIER_PROPERTY = '__identity';
+
     /**
      * @var DocumentRepository
      */
@@ -73,7 +75,6 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     public function countAllModels(ResourceType $resourceType): int
     {
         return $this->repository->countAll();
-
     }
 
     public function fetchModel($identifier, ResourceType $resourceType)
@@ -81,16 +82,35 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         return $this->repository->findById($identifier);
     }
 
+    //public function createModel(array $data, ResourceType $resourceType)
+    //{
+    //    // If no data is given return a new empty instance
+    //    if (!$data) {
+    //        return $this->getEmptyModelForResourceType($resourceType);
+    //    }
+    //
+    //    // It is **not** allowed to insert Models with a defined UID
+    //    if (isset($data['__identity']) && $data['__identity']) {
+    //        return new InvalidPropertyException('Invalid property "__identity"');
+    //    }
+    //
+    //    if (isset($data['uid']) && isset($data['id'])) {
+    //        return new InvalidPropertyException('Either the "id" or "uid" must be given');
+    //    }
+    //    if (isset($data['uid'])) {
+    //        $data['id'] = $data['uid'];
+    //        unset($data['uid']);
+    //    }
+    //
+    //    // Get a fresh model
+    //    return $this->convertIntoModel($data, $resourceType);
+    //}
+
     public function convertIntoModel(array $data, ResourceType $resourceType)
     {
         // If no data is given return NULL
         if (!$data) {
             return null;
-        }
-
-        // If it is a scalar treat it as identity
-        if (is_scalar($data)) {
-            return $this->fetchModel($data, $resourceType);
         }
 
         $data = $this->prepareModelData($data);
@@ -102,10 +122,10 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         }
 
         try {
-            $identity = $data['__identity'] ?? null;
+            $identity = $data[self::IDENTIFIER_PROPERTY] ?? null;
             if (null !== $identity) {
                 $model = $this->fetchModel($identity, $resourceType);
-                unset($data['__identity']);
+                unset($data[self::IDENTIFIER_PROPERTY]);
                 $model = $this->dataMapper->hydrate($model, $data);
             } else {
                 $model = $this->dataMapper->mapSingleRow(Document::class, $data);

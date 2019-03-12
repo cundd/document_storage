@@ -6,6 +6,7 @@ namespace Cundd\DocumentStorage\Rest;
 use Cundd\DocumentStorage\Persistence\DataMapper;
 use Cundd\Rest\DataProvider\ExtractorInterface;
 use Cundd\Rest\DataProvider\IdentityProviderInterface;
+use Cundd\Rest\Exception\InvalidPropertyException;
 use Cundd\Rest\Handler\HandlerInterface;
 use Cundd\Rest\Http\RestRequestInterface;
 use Cundd\Rest\Log\LoggerInterface;
@@ -64,27 +65,70 @@ class DocumentHandler implements HandlerInterface
         return 'Handler for Document Storage requests';
     }
 
-    public function getProperty(RestRequestInterface $request, string $databaseName, $identifier, $propertyKey)
-    {
+    public function getProperty(
+        RestRequestInterface $request,
+        string $databaseName,
+        string $identifier,
+        string $propertyKey
+    ) {
         return $this->performGetProperty($this->getDataProvider($databaseName), $request, $identifier, $propertyKey);
     }
 
-    public function show(RestRequestInterface $request, string $databaseName, $identifier)
-    {
+    public function show(
+        RestRequestInterface $request,
+        string $databaseName,
+        string $identifier
+    ) {
         return $this->performShow($this->getDataProvider($databaseName), $request, $identifier);
+    }
+
+    public function createOrUpdate(
+        RestRequestInterface $request,
+        string $databaseName,
+        string $identifier
+    ) {
+        $resourceType = $request->getResourceType();
+        $dataProvider = $this->getDataProvider($databaseName);
+        if ($dataProvider->fetchModel($identifier, $resourceType)) {
+            $response = $this->performUpdate($dataProvider, $request, $identifier, $request->getSentData());
+
+            if ($response instanceof \Exception) {
+                throw $response;
+            }
+
+            return $response;
+        } else {
+            $data = $request->getSentData();
+            if (isset($data['id']) && (string)$data['id'] !== $identifier) {
+                return new InvalidPropertyException('Property "id" is set but does not match the URI\'s identifier');
+            }
+            $data['id'] = $identifier;
+
+            $response = $this->performCreate($dataProvider, $request, $data);
+            if ($response instanceof \Exception) {
+                throw $response;
+            }
+
+            return $response;
+        }
     }
 
     public function create(RestRequestInterface $request, string $databaseName)
     {
-        return $this->performCreate($this->getDataProvider($databaseName), $request);
+        return $this->performCreate($this->getDataProvider($databaseName), $request, $request->getSentData());
     }
 
     public function update(RestRequestInterface $request, string $databaseName, $identifier)
     {
-        return $this->performUpdate($this->getDataProvider($databaseName), $request, $identifier);
+        return $this->performUpdate(
+            $this->getDataProvider($databaseName),
+            $request,
+            $identifier,
+            $request->getSentData()
+        );
     }
 
-    public function delete(RestRequestInterface $request, string $databaseName, $identifier)
+    public function delete(RestRequestInterface $request, string $databaseName, string $identifier)
     {
         return $this->performDelete($this->getDataProvider($databaseName), $request, $identifier);
     }
@@ -99,8 +143,10 @@ class DocumentHandler implements HandlerInterface
         return $this->performCountAll($this->getDataProvider($databaseName), $request);
     }
 
-    public function info(RestRequestInterface $request)
-    {
+    public function info(
+        /** @noinspection PhpUnusedParameterInspection */
+        RestRequestInterface $request
+    ) {
         return 'Document Storage ' . self::VERSION;
     }
 
@@ -117,12 +163,13 @@ class DocumentHandler implements HandlerInterface
         $router->add(Route::get($resourceType . '/{slug}/_count/?', [$this, 'countAll']));
         $router->add(Route::post($resourceType . '/{slug}/?', [$this, 'create']));
         $router->add(Route::get($resourceType . '/{slug}/{slug}/?', [$this, 'show']));
-        $router->add(Route::put($resourceType . '/{slug}/{slug}/?', [$this, 'update']));
-        $router->add(Route::post($resourceType . '/{slug}/{slug}/?', [$this, 'update']));
+        $router->add(Route::put($resourceType . '/{slug}/{slug}/?', [$this, 'createOrUpdate']));
+        $router->add(Route::post($resourceType . '/{slug}/{slug}/?', [$this, 'createOrUpdate']));
+        $router->add(Route::options($resourceType . '/{slug}/{slug}/?', [$this, 'options']));
         $router->add(Route::delete($resourceType . '/{slug}/{slug}/?', [$this, 'delete']));
-        $router->add(Route::routeWithPatternAndMethod($resourceType . '/{slug}/{slug}/?', 'PATCH', [$this, 'update']));
+        $router->add(Route::patch($resourceType . '/{slug}/{slug}/?', [$this, 'update']));
         $router->add(Route::get($resourceType . '/{slug}/{slug}/{slug}/?', [$this, 'getProperty']));
-        $router->add(Route::routeWithPatternAndMethod($resourceType . '/{slug}/?', 'OPTIONS', [$this, 'options']));
+        $router->add(Route::options($resourceType . '/{slug}/?', [$this, 'options']));
     }
 
     /**
