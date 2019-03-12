@@ -25,6 +25,19 @@ class FreeDocumentRepository extends AbstractDocumentRepository
     }
 
     /**
+     * Count all objects of the given Document database
+     *
+     * @param string $database
+     * @return int
+     */
+    public function countByDatabase(string $database): int
+    {
+        InvalidDatabaseNameException::assertValidDatabaseName($database);
+
+        return $this->baseRepository->countByDatabase($database);
+    }
+
+    /**
      * Remove all Documents from the given database
      *
      * @param string $database

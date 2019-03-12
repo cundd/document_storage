@@ -149,10 +149,7 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
 
     public function countAll(string $database = null)
     {
-        $query = $this->createQuery();
-        $query->matching($query->equals('db', $this->prepareDatabaseArgument($database)));
-
-        return $query->execute()->count();
+        return $this->countByDatabase($database);
     }
 
     public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): array
@@ -232,6 +229,20 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
         $query->matching($query->equals('db', $this->prepareDatabaseArgument($database)));
 
         return $this->convertQueryResult($query);
+    }
+
+    /**
+     * Return all objects of the given Document database
+     *
+     * @param string $database
+     * @return int
+     */
+    public function countByDatabase(string $database): int
+    {
+        $query = $this->createQuery();
+        $query->matching($query->equals('db', $this->prepareDatabaseArgument($database)));
+
+        return $query->count();
     }
 
     /**
