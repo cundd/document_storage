@@ -28,5 +28,8 @@
     "replace": {
         "document_storage": "self.version",
         "typo3-ter/document-storage": "self.version"
+    },
+    "suggest": {
+        "ext-readline": "For better CLI support"
     }
 }
