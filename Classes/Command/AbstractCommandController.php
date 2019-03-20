@@ -5,6 +5,7 @@ namespace Cundd\DocumentStorage\Command;
 
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Repository\BaseDocumentRepository;
+use Cundd\DocumentStorage\Domain\Repository\DatabaseRepository;
 use Cundd\DocumentStorage\Domain\Repository\FreeDocumentRepository;
 use Cundd\DocumentStorage\Persistence\DataMapper;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,6 +23,11 @@ abstract class AbstractCommandController extends \Symfony\Component\Console\Comm
      * @var FreeDocumentRepository
      */
     private $documentRepository;
+
+    /**
+     * @var DatabaseRepository
+     */
+    private $databaseRepository;
 
     /**
      * @var ObjectManagerInterface
@@ -58,6 +64,19 @@ abstract class AbstractCommandController extends \Symfony\Component\Console\Comm
         }
 
         return $this->documentRepository;
+    }
+
+    protected function getDatabaseRepository(): DatabaseRepository
+    {
+        if (!$this->databaseRepository) {
+            $objectManager = $this->getObjectManager();
+            $this->databaseRepository = new DatabaseRepository(
+                $objectManager,
+                $objectManager->get(ConnectionPool::class)
+            );
+        }
+
+        return $this->databaseRepository;
     }
 
     protected function getDataMapper(): DataMapper
