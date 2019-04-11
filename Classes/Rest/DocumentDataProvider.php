@@ -177,8 +177,12 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         }
 
         assert($model instanceof Document);
+        $unpackedData = $model->getUnpackedData();
+        if ($unpackedData === null) {
+            $unpackedData = [];
+        }
         $properties = array_merge(
-            $model->getUnpackedData(),
+            (array)$unpackedData,
             $this->extractor->extract($model),
             [
                 '_meta' => [
