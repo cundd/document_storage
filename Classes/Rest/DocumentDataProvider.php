@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Rest;
 
-use Cundd\DocumentStorage\Domain\Exception\InvalidIdException;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepository;
+use Cundd\DocumentStorage\Exception\InvalidIdException;
 use Cundd\DocumentStorage\Persistence\DataMapper;
 use Cundd\Rest\DataProvider\DataProvider;
 use Cundd\Rest\DataProvider\DataProviderInterface;
