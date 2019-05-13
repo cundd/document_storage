@@ -37,7 +37,7 @@ abstract class AbstractDocumentRepository extends FixedDatabaseBridge
     /**
      * Return the name of the database managed by this repository
      *
-     * If this property is defined, it will be used as the database name for this repository
+     * Overwrite this to define a custom database name to be used by this repository
      *
      * @return string
      */
