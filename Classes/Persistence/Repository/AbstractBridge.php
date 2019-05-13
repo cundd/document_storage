@@ -7,10 +7,12 @@ use BadFunctionCallException;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryInterface;
+use InvalidArgumentException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\QuerySettingsInterface;
+use function is_string;
 
 /**
  * The Bridge builds the connection between the various Document repository implementations and the concrete Core
@@ -64,8 +66,32 @@ abstract class AbstractBridge implements DocumentRepositoryInterface
         $this->baseRepository->update($this->checkDocumentDatabase($modifiedObject));
     }
 
+    /**
+     * @param string $uid The identifier of the object to find
+     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     * @see findByIdentifier()
+     */
+    public function findByUid($uid)
+    {
+        return $this->findByIdentifier($uid);
+    }
+
+    /**
+     * Find an object matching the given GUID
+     *
+     * In contrast to the default Repositories the method requires the argument to be a GUID string
+     *
+     * @param string $identifier The identifier of the object to find
+     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     */
     public function findByIdentifier($identifier)
     {
+        if (!is_string($identifier)) {
+            throw new InvalidArgumentException(
+                'FreeDocumentRepository::findByUid() requires the argument to be a GUID string'
+            );
+        }
+
         return $this->findByGuid($identifier);
     }
 

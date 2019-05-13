@@ -61,15 +61,22 @@ abstract class FixedDatabaseBridge extends AbstractBridge
      *
      * @param string $id
      * @return DocumentInterface
+     * @see findById()
      */
     public function findOneById(string $id)
     {
-        return $this->baseRepository->findOneByDatabaseAndId($this->getDatabase(), $id);
+        return $this->findById($id);
     }
 
-    public function findByUid($uid)
+    /**
+     * Return the Document with the given ID
+     *
+     * @param string $id
+     * @return DocumentInterface
+     */
+    public function findById(string $id)
     {
-        return $this->baseRepository->findOneByDatabaseAndId($this->getDatabase(), (string)$uid);
+        return $this->baseRepository->findOneByDatabaseAndId($this->getDatabase(), $id);
     }
 
     public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): iterable
