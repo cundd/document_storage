@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Repository;
 
-use Cundd\DocumentStorage\Domain\Exception\NoDatabaseSelectedException;
-use Cundd\DocumentStorage\Domain\Model\Document;
+use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
+use Cundd\DocumentStorage\Exception\NoDatabaseSelectedException;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
@@ -16,38 +16,23 @@ interface DocumentRepositoryInterface extends RepositoryInterface
      * Return the Document with the given GUID
      *
      * @param string $guid
-     * @return Document
+     * @return DocumentInterface
      */
-    public function findByGuid(string $guid): ?Document;
+    public function findByGuid(string $guid): ?DocumentInterface;
 
     /**
      * Return the Document with the given ID in the given database
      *
      * @param string $database
      * @param string $id
-     * @return Document
+     * @return DocumentInterface
      */
-    public function findOneByDatabaseAndId(string $database, string $id): ?Document;
-
-    /**
-     * Return the Document with the given ID
-     *
-     * @param string $id
-     * @return Document
-     */
-    public function findOneById(string $id);
-
-    /**
-     * @see findOneById()
-     * @param $id
-     * @return Document
-     */
-    public function findById(string $id);
+    public function findOneByDatabaseAndId(string $database, string $id): ?DocumentInterface;
 
     /**
      * Return all objects ignoring the selected database
      *
-     * @return Document[]|QueryResultInterface
+     * @return DocumentInterface[]|QueryResultInterface
      */
     public function findAllIgnoreDatabase();
 
@@ -56,8 +41,8 @@ interface DocumentRepositoryInterface extends RepositoryInterface
      *
      * @param array   $properties Dictionary of property keys and values
      * @param integer $limit      Limit the number of matches
+     * @return DocumentInterface[]
      * @throws NoDatabaseSelectedException if the converted Document has no database
-     * @return array
      */
-    public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): array;
+    public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): iterable;
 }

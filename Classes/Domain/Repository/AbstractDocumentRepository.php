@@ -3,99 +3,52 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Repository;
 
-use Cundd\DocumentStorage\Domain\Model\Document;
-use TYPO3\CMS\Core\Database\ConnectionPool;
+use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
+use Cundd\DocumentStorage\Persistence\Repository\FixedDatabaseBridge;
+use TYPO3\CMS\Core\Utility\ClassNamingUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
-use TYPO3\CMS\Extbase\Persistence\Generic\QuerySettingsInterface;
+use function str_replace;
+use function strtolower;
 
 /**
+ * An abstract Document Repository that can be extended to interface the Documents with a custom Repository
+ *
+ * Only Documents of the specified Database can be managed by this Repository. So this is a more traditional Repository.
+ * To manage Documents belonging to any Database use the `FreeDocumentRepository`.
+ * For a Repository that does not need to be subclassed use the `DocumentRepository`.
  */
-abstract class AbstractDocumentRepository implements DocumentRepositoryInterface
+abstract class AbstractDocumentRepository extends FixedDatabaseBridge
 {
     /**
-     * @var BaseDocumentRepository
-     */
-    protected $baseRepository;
-
-    /**
-     * Constructs a new Repository
+     * Abstract Document Repository constructor
      *
-     * @param ObjectManagerInterface      $objectManager
-     * @param BaseDocumentRepository|null $baseRepository
+     * @param ObjectManagerInterface|null          $objectManager
+     * @param CoreDocumentRepositoryInterface|null $baseRepository
      */
     public function __construct(
-        ObjectManagerInterface $objectManager,
-        ?BaseDocumentRepository $baseRepository = null
+        ?ObjectManagerInterface $objectManager = null,
+        ?CoreDocumentRepositoryInterface $baseRepository = null
     ) {
-        $this->baseRepository = $baseRepository ?? BaseDocumentRepository::build(
-                $objectManager,
-                $objectManager->get(ConnectionPool::class)
-            );
+        $objectType = ClassNamingUtility::translateRepositoryNameToModelName($this->getRepositoryClassName());
+        $database = strtolower(str_replace('\\', '_', $objectType));
+        parent::__construct($objectManager, $database, $baseRepository, $objectType);
     }
 
     /**
-     * @param Document|object $object
-     * @return Document
+     * Return the name of the database managed by this repository
+     *
+     * If this property is defined, it will be used as the database name for this repository
+     *
+     * @return string
      */
-    abstract protected function checkDocumentDatabase(Document $object): Document;
-
-    public function add($object)
+    protected function getDatabase(): string
     {
-        $this->baseRepository->add($this->checkDocumentDatabase($object));
+        return parent::getDatabase();
     }
 
-    public function remove($object)
-    {
-        $this->baseRepository->remove($this->checkDocumentDatabase($object));
-    }
 
-    public function update($modifiedObject)
+    protected function getRepositoryClassName(): string
     {
-        $this->baseRepository->update($this->checkDocumentDatabase($modifiedObject));
-    }
-
-    public function findByUid($uid)
-    {
-        return $this->baseRepository->findByUid($uid);
-    }
-
-    public function findByIdentifier($identifier)
-    {
-        return $this->findByGuid($identifier);
-    }
-
-    public function setDefaultOrderings(array $defaultOrderings)
-    {
-        throw new \BadFunctionCallException(__METHOD__ . ' is not implemented');
-    }
-
-    public function setDefaultQuerySettings(QuerySettingsInterface $defaultQuerySettings)
-    {
-        throw new \BadFunctionCallException(__METHOD__ . ' is not implemented');
-    }
-
-    public function createQuery()
-    {
-        throw new \BadFunctionCallException(__METHOD__ . ' is not implemented');
-    }
-
-    public function findByGuid(string $guid): ?Document
-    {
-        return $this->baseRepository->findByGuid($guid);
-    }
-
-    public function findOneByDatabaseAndId(string $database, string $id): ?Document
-    {
-        return $this->baseRepository->findOneByDatabaseAndId($database, $id);
-    }
-
-    public function findById($id)
-    {
-        return $this->findOneById($id);
-    }
-
-    public function findAllIgnoreDatabase()
-    {
-        return $this->baseRepository->findAllIgnoreDatabase();
+        return static::class;
     }
 }

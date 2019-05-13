@@ -4,18 +4,21 @@ declare(strict_types=1);
 namespace Cundd\DocumentStorage\Command;
 
 use Cundd\DocumentStorage\Domain\Model\Document;
-use Cundd\DocumentStorage\Domain\Repository\BaseDocumentRepository;
 use Cundd\DocumentStorage\Domain\Repository\DatabaseRepository;
 use Cundd\DocumentStorage\Domain\Repository\FreeDocumentRepository;
 use Cundd\DocumentStorage\Persistence\DataMapper;
+use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
+use function preg_replace;
+use function str_replace;
 
-abstract class AbstractCommandController extends \Symfony\Component\Console\Command\Command
+abstract class AbstractCommandController extends Command
 {
     /**
      * Document repository
@@ -41,11 +44,11 @@ abstract class AbstractCommandController extends \Symfony\Component\Console\Comm
 
     protected function getDocument(OutputInterface $output, string $db, string $id): ?Document
     {
+        /** @var Document $document */
         $document = $this->getDocumentRepository()->findOneByDatabaseAndId($db, $id);
         if ($document) {
             return $document;
         } else {
-
             $output->writeln("<error>Document $db/$id not found</error>");
 
             return null;
@@ -56,10 +59,7 @@ abstract class AbstractCommandController extends \Symfony\Component\Console\Comm
     {
         if (!$this->documentRepository) {
             $objectManager = $this->getObjectManager();
-            $baseDocumentRepository = BaseDocumentRepository::build(
-                $objectManager,
-                $objectManager->get(ConnectionPool::class)
-            );
+            $baseDocumentRepository = CoreDocumentRepository::build($objectManager);
             $this->documentRepository = new FreeDocumentRepository($objectManager, $baseDocumentRepository);
         }
 
@@ -100,13 +100,24 @@ abstract class AbstractCommandController extends \Symfony\Component\Console\Comm
      * @param bool  $isJsonString Set this to TRUE if the given data already is a JSON string
      * @return string
      */
-    protected function formatJsonData($data, bool $isJsonString = false)
+    protected function formatJsonData($data, bool $isJsonString = false, bool $withColors = true)
     {
         if ($isJsonString) {
             $data = json_decode((string)$data, true);
         }
 
-        return json_encode($data, JSON_PRETTY_PRINT);
+        $output = json_encode($data, JSON_PRETTY_PRINT);
+        if (!$withColors) {
+            return $output;
+        }
+
+        $output = preg_replace('!"([^"]+)":!', '<fg=yellow>"$1"</>:', $output);
+        $output = preg_replace('!"([^"]*)"(,?)$!m', '<fg=green>"$1"</>$2', $output);
+        $output = preg_replace('!(-?\d+\.\d+)(,?)$!m', '<fg=magenta>$1</>$2', $output);
+        $output = preg_replace('!(-?\d+)(,?)$!m', '<fg=red>$1</>$2', $output);
+        $output = str_replace(': null', ': <fg=blue>: null</>', $output);
+
+        return $output;
     }
 
     /**
@@ -130,8 +141,11 @@ abstract class AbstractCommandController extends \Symfony\Component\Console\Comm
      * @param Document        $document
      * @param bool            $showBody
      */
-    protected function outputDocument(OutputInterface $output, Document $document, bool $showBody = false): void
-    {
+    protected function outputDocument(
+        OutputInterface $output,
+        Document $document,
+        bool $showBody = false
+    ): void {
         $output->writeln(
             '<info>'
             . 'Database: ' . $document->getDb() . ' '

@@ -3,28 +3,20 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Model;
 
-use Cundd\DocumentStorage\Domain\Exception\InvalidDatabaseNameException;
-use Cundd\DocumentStorage\Domain\Exception\InvalidDocumentException;
-use Cundd\DocumentStorage\Domain\Exception\InvalidIdException;
+use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
+use Cundd\DocumentStorage\Exception\InvalidDocumentException;
+use Cundd\DocumentStorage\Exception\InvalidIdException;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use function is_null;
+use function is_scalar;
+use function is_string;
 
-/**
- * Class Document
- *
- * A Document is a flexible, schema-less object
- */
-class Document extends AbstractEntity implements \ArrayAccess
+class Document extends AbstractEntity implements DocumentInterface
 {
-    /**
-     * Name of the property that holds the data
-     */
-    public const DATA_PROPERTY_NAME = 'dataProtected';
-
     /**
      * ID
      *
      * @var \string
-     * @validate NotEmpty
      * @identity
      */
     protected $id;
@@ -33,7 +25,6 @@ class Document extends AbstractEntity implements \ArrayAccess
      * Database
      *
      * @var \string
-     * @validate NotEmpty
      * @identity
      */
     protected $db;
@@ -42,14 +33,6 @@ class Document extends AbstractEntity implements \ArrayAccess
      * @var \bool
      */
     protected $deleted;
-
-    /**
-     * Document data
-     *
-     * @var \string
-     * @validate NotEmpty
-     */
-    protected $dataProtected;
 
     /**
      * Creation time
@@ -66,17 +49,19 @@ class Document extends AbstractEntity implements \ArrayAccess
     protected $modificationTime;
 
     /**
+     * Document data
+     *
+     * @var \string
+     */
+    protected $dataProtected;
+
+    /**
      * Unpacked Document content
      *
      * @var array
      */
     protected $_dataUnpacked = null;
 
-    /**
-     * Returns the Documents global unique identifier
-     *
-     * @return string
-     */
     final public function getGuid(): ?string
     {
         $guid = $this->db . '/' . $this->id;
@@ -84,46 +69,36 @@ class Document extends AbstractEntity implements \ArrayAccess
         return $guid !== '/' ? $guid : null;
     }
 
-    /**
-     * Sets the Document's ID
-     *
-     * @param string $id
-     */
-    final public function setId(string $id)
+    final public function setId($id)
     {
         InvalidIdException::assertValidId($id);
-        $this->id = $id;
+        $this->id = (string)$id;
     }
 
-    /**
-     * Returns the Document's ID
-     *
-     * @return string
-     */
     final public function getId(): ?string
     {
-        return $this->id;
+        $id = $this->id;
+        if (is_null($id) || is_string($id)) {
+            return $id;
+        }
+        if (is_scalar($id)) {
+            return (string)$id;
+        }
+        throw new InvalidIdException('ID is not valid');
     }
 
-    /**
-     * @return bool
-     */
     final public function isDeleted(): bool
     {
         return (bool)$this->deleted;
     }
 
-    /**
-     * @param bool $deleted
-     */
     final public function setDeleted(bool $deleted): void
     {
         $this->deleted = $deleted;
     }
 
-
     /**
-     * Sets the Document's data
+     * Set the Document's data
      *
      * @param string $content
      */
@@ -134,7 +109,7 @@ class Document extends AbstractEntity implements \ArrayAccess
     }
 
     /**
-     * Returns the Document's data
+     * Return the Document's data
      *
      * @return string|null
      */
@@ -143,34 +118,17 @@ class Document extends AbstractEntity implements \ArrayAccess
         return $this->dataProtected;
     }
 
-    /**
-     * Sets the Document's database
-     *
-     * @param string $db
-     * @throws InvalidDatabaseNameException if the given database name is not valid
-     */
     final public function setDb(string $db)
     {
         InvalidDatabaseNameException::assertValidDatabaseName($db);
         $this->db = strtolower($db);
     }
 
-    /**
-     * Returns the Document's database
-     *
-     * @return string
-     */
     final public function getDb(): ?string
     {
         return $this->db;
     }
 
-    /**
-     * Returns the value for the given key
-     *
-     * @param string $key
-     * @return mixed
-     */
     public function valueForKey(string $key)
     {
         if (property_exists($this, $key)) {
@@ -185,13 +143,6 @@ class Document extends AbstractEntity implements \ArrayAccess
         return $this->valueForUndefinedKey($key);
     }
 
-    /**
-     * Returns the value for the given key path (i.e. "foo.bar")
-     *
-     * @param string $keyPath
-     * @param mixed  $default
-     * @return mixed
-     */
     public function valueForKeyPath(string $keyPath, $default = null)
     {
         if (strpos($keyPath, '.') === false) {
@@ -209,12 +160,6 @@ class Document extends AbstractEntity implements \ArrayAccess
         return is_null($result) ? $default : $result;
     }
 
-    /**
-     * Invoked if a retrieved key is not defined
-     *
-     * @param string $key
-     * @return null
-     */
     public function valueForUndefinedKey(
         /** @noinspection PhpUnusedParameterInspection */
         string $key
@@ -222,14 +167,7 @@ class Document extends AbstractEntity implements \ArrayAccess
         return null;
     }
 
-    /**
-     * Sets the value for the given key
-     *
-     * @param string $key
-     * @param mixed  $value
-     * @return Document
-     */
-    public function setValueForKey(string $key, $value): self
+    public function setValueForKey(string $key, $value): DocumentInterface
     {
         if ($key === self::DATA_PROPERTY_NAME) {
             $this->dataProtected = $value;
@@ -237,7 +175,12 @@ class Document extends AbstractEntity implements \ArrayAccess
 
             return $this;
         }
-        if (property_exists($this, $key)) {
+        $setter = 'set' . ucfirst($key);
+        if (method_exists($this, $setter)) {
+            $this->$setter($value);
+
+            return $this;
+        } elseif (property_exists($this, $key)) {
             $this->$key = $value;
 
             return $this;
@@ -254,7 +197,7 @@ class Document extends AbstractEntity implements \ArrayAccess
     }
 
     /**
-     * Returns the unpacked Document data
+     * Return the unpacked Document data
      *
      * @return array|mixed
      */
@@ -276,26 +219,6 @@ class Document extends AbstractEntity implements \ArrayAccess
         return $this->_dataUnpacked;
     }
 
-    public function offsetExists($offset)
-    {
-        return (bool)$this->valueForKey((string)$offset);
-    }
-
-    public function offsetGet($offset)
-    {
-        return $this->valueForKey((string)$offset);
-    }
-
-    public function offsetSet($offset, $value)
-    {
-        $this->setValueForKey((string)$offset, $value);
-    }
-
-    public function offsetUnset($offset)
-    {
-        $this->setValueForKey((string)$offset, null);
-    }
-
     public function __get($name)
     {
         return $this->valueForKey((string)$name);
@@ -303,13 +226,13 @@ class Document extends AbstractEntity implements \ArrayAccess
 
     public function __isset($name)
     {
-        return $this->offsetExists((string)$name);
+        return (bool)$this->valueForKey((string)$name);
     }
 
     /**
      * Packs the Document content
      *
-     * @return $this
+     * @return DocumentInterface
      */
     private function _packContent()
     {

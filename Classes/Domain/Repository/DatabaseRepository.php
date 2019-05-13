@@ -6,10 +6,15 @@ namespace Cundd\DocumentStorage\Domain\Repository;
 
 use Cundd\DocumentStorage\Domain\Model\Database;
 use Cundd\DocumentStorage\Domain\Model\Document;
+use DateTimeImmutable;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+use TYPO3\CMS\Extbase\Persistence\Generic\Exception;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
 
+/**
+ * Repository to fetch information about Databases (not the Documents inside)
+ */
 class DatabaseRepository
 {
     private $objectManager;
@@ -47,7 +52,7 @@ class DatabaseRepository
         foreach ($result->fetchAll() as $row) {
             $name = $row['name'];
             try {
-                $creationTime = new \DateTimeImmutable('@' . $row['creationTime']);
+                $creationTime = new DateTimeImmutable('@' . $row['creationTime']);
             } catch (\Exception $e) {
                 $creationTime = null;
             }
@@ -64,7 +69,10 @@ class DatabaseRepository
     {
         static $table = null;
         if (null === $table) {
-            $table = $this->objectManager->get(DataMapper::class)->getDataMap(Document::class)->getTableName();
+            try {
+                $table = $this->objectManager->get(DataMapper::class)->getDataMap(Document::class)->getTableName();
+            } catch (Exception $e) {
+            }
         }
 
         return $table;

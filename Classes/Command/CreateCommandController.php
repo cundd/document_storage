@@ -3,27 +3,28 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
 
-use Cundd\DocumentStorage\Domain\Exception\InvalidDocumentException;
 use Cundd\DocumentStorage\Domain\Model\Document;
+use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use function file_get_contents;
+use const STDIN;
 
 class CreateCommandController extends AbstractCommandController
 {
-    protected static $defaultName = 'document-storage:create';
-
-    /**
-     * Configure the command by defining the name, options and arguments
-     */
     protected function configure()
     {
-        $help = 'Create a new Document.' . LF . 'If you want to get more detailed information, use the --verbose option.';
+        $help = 'Create a new Document.';
         $this->setDescription('Create a new Document')
             ->setHelp($help)
             ->addArgument('database', InputArgument::REQUIRED, 'Document database')
             ->addArgument('id', InputArgument::REQUIRED, 'Document ID')
-            ->addArgument('data', InputArgument::OPTIONAL, 'Document JSON data');
+            ->addArgument(
+                'data',
+                InputArgument::OPTIONAL,
+                'Document JSON data (otherwise read from STDIN or console input)'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -38,10 +39,10 @@ class CreateCommandController extends AbstractCommandController
         }
 
         $data = $this->getData($input, $output);
+        /** @var Document $document */
         $document = $this->getDataMapper()->mapSingleRow(Document::class, $data);
         $document->setId($id);
         $document->setDb($db);
-
 
         $this->outputDocument($output, $document);
         $documentRepository->add($document);
@@ -59,6 +60,9 @@ class CreateCommandController extends AbstractCommandController
     protected function getData(InputInterface $input, OutputInterface $output)
     {
         $dataRaw = $input->getArgument('data');
+        if (!$dataRaw) {
+            $dataRaw = $this->getPipedData();
+        }
         if (!$dataRaw) {
             $output->writeln('<question>Insert JSON formatted Document:</question> ');
             do {
@@ -83,7 +87,14 @@ class CreateCommandController extends AbstractCommandController
             /** @noinspection PhpComposerExtensionStubsInspection */
             return readline();
         } else {
-            return stream_get_line(STDIN, 1024, PHP_EOL);
+            return (string)stream_get_line(STDIN, 1024, PHP_EOL);
         }
+    }
+
+    protected function getPipedData(): string
+    {
+        stream_set_blocking(STDIN, false);
+
+        return (string)file_get_contents('php://stdin');
     }
 }

@@ -5,7 +5,7 @@ CREATE TABLE tx_documentstorage_domain_model_document (
 
                                                         id varchar(255) DEFAULT '' NOT NULL,
                                                         db varchar(255) DEFAULT '' NOT NULL,
-                                                        data_protected text,
+                                                        data_protected mediumtext,
 
                                                         UNIQUE KEY guid (db, id),
                                                         KEY db (db),

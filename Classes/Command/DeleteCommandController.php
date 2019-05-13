@@ -9,14 +9,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DeleteCommandController extends AbstractCommandController
 {
-    protected static $defaultName = 'document-storage:delete';
-
-    /**
-     * Configure the command by defining the name, options and arguments
-     */
     protected function configure()
     {
-        $help = 'Remove a Document from the database.' . LF . 'If you want to get more detailed information, use the --verbose option.';
+        $help = 'Remove a Document from the database.';
         $this->setDescription('Remove a Document from the database')
             ->setHelp($help)
             ->addArgument('database', InputArgument::REQUIRED, 'Document database')

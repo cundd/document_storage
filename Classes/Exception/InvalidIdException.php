@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cundd\DocumentStorage\Domain\Exception;
+namespace Cundd\DocumentStorage\Exception;
 
 /**
  * Exception thrown if the given ID is invalid
@@ -17,7 +17,11 @@ class InvalidIdException extends DomainException
             throw new static('ID must be either a string or integer value', 1389258925);
         }
 
-        if (!ctype_alnum(str_replace(['-', '_'], '', $id))) {
+        $cleanId = str_replace(['-', '_'], '', $id);
+        if (!trim($cleanId)) {
+            throw new static('ID must must not be empty', 1389258924);
+        }
+        if (!ctype_alnum($cleanId)) {
             throw new static('ID must contain only alphanumeric characters, "-" and "_"', 1389258923);
         }
     }

@@ -1,24 +1,31 @@
 <?php
 declare(strict_types=1);
 
-namespace Cundd\DocumentStorage\Domain\Repository;
+namespace Cundd\DocumentStorage\Persistence\Repository;
 
-use Cundd\DocumentStorage\Domain\Exception\InvalidDatabaseNameException;
-use Cundd\DocumentStorage\Domain\Exception\NoDatabaseSelectedException;
+use Cundd\DocumentStorage\DocumentFilter;
 use Cundd\DocumentStorage\Domain\Model\Document;
+use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
+use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
+use Cundd\DocumentStorage\Exception\InvalidIdException;
+use Cundd\DocumentStorage\Exception\NoDatabaseSelectedException;
 use Cundd\DocumentStorage\Persistence\DataMapper;
-use Doctrine\DBAL\Driver\Statement;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+use TYPO3\CMS\Extbase\Persistence\Generic\Exception\UnsupportedMethodException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Qom\ConstraintInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Query;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
-use TYPO3\CMS\Extbase\Reflection\ObjectAccess;
 
-class BaseDocumentRepository extends Repository implements DocumentRepositoryInterface
+/**
+ * Generic Document Repository implementation to be used by concrete implementations like `FreeDocumentRepository`or
+ * `DocumentRepository`
+ *
+ * @internal
+ */
+class CoreDocumentRepository extends Repository implements CoreDocumentRepositoryInterface
 {
     /**
      * Defines if query results should be retrieved raw and converted by convertCollection()
@@ -28,47 +35,58 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
     private $useCustomDataMapping = false;
 
     /**
-     * @var ConnectionPool
-     */
-    private $connectionPool;
-
-    /**
      * @var DataMapper|null
      */
     private $dataMapper;
+    /**
+     * @var DocumentFilter|null
+     */
+    private $documentFilter;
 
     /**
      * Concrete Repository implementation which will be used by `DocumentRepository` and `FreeDocumentRepository`
      *
      * @param ObjectManagerInterface $objectManager
-     * @param ConnectionPool|null    $connectionPool
+     * @param string                 $objectType
      * @param DataMapper|null        $dataMapper
+     * @param DocumentFilter|null    $documentFilter
      */
     private function __construct(
         ObjectManagerInterface $objectManager,
-        ?ConnectionPool $connectionPool = null,
-        ?DataMapper $dataMapper = null
+        string $objectType = Document::class,
+        ?DataMapper $dataMapper = null,
+        ?DocumentFilter $documentFilter = null
     ) {
         parent::__construct($objectManager);
         $this->injectPersistenceManager($objectManager->get(PersistenceManagerInterface::class));
-        $this->connectionPool = $connectionPool ?? $objectManager->get(ConnectionPool::class);
         $this->dataMapper = $dataMapper ?? $objectManager->get(DataMapper::class);
-        $this->objectType = Document::class;
+        $this->objectType = $objectType;
+        $this->documentFilter = $documentFilter ?? $objectManager->get(DocumentFilter::class);
     }
 
+    /**
+     * Factory to build the Base Document Repository
+     *
+     * @param ObjectManagerInterface $objectManager
+     * @param string                 $objectType
+     * @param DataMapper|null        $dataMapper
+     * @return CoreDocumentRepositoryInterface
+     * @internal
+     */
     public static function build(
         ObjectManagerInterface $objectManager,
-        ?ConnectionPool $connectionPool = null
-    ): BaseDocumentRepository {
-        return new static($objectManager, $connectionPool);
+        string $objectType = Document::class,
+        ?DataMapper $dataMapper = null
+    ): CoreDocumentRepositoryInterface {
+        return new static($objectManager, $objectType, $dataMapper);
     }
 
     /**
      * Add an object to this repository
      *
-     * @param Document $object The object to add
-     * @throws NoDatabaseSelectedException if the given object and the repository have no database set
+     * @param DocumentInterface $object The object to add
      * @return void
+     * @throws NoDatabaseSelectedException if the given object and the repository have no database set
      */
     public function add($object)
     {
@@ -81,9 +99,9 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
     /**
      * Remove an object from this repository
      *
-     * @param Document $object The object to remove
-     * @throws NoDatabaseSelectedException if the given object and the repository have no database set
+     * @param DocumentInterface $object The object to remove
      * @return void
+     * @throws NoDatabaseSelectedException if the given object and the repository have no database set
      */
     public function remove($object)
     {
@@ -99,9 +117,9 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
     /**
      * Replace an existing object with the same identifier by the given object
      *
-     * @param Document $modifiedObject The modified object
-     * @throws NoDatabaseSelectedException if the given object and the repository have no database set
+     * @param DocumentInterface $modifiedObject The modified object
      * @return void
+     * @throws NoDatabaseSelectedException if the given object and the repository have no database set
      */
     public function update($modifiedObject)
     {
@@ -115,14 +133,14 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
      * Return all objects of the selected Document database
      *
      * @param string|null $database
-     * @return Document[]|QueryResultInterface
+     * @return DocumentInterface[]|QueryResultInterface
      */
     public function findAll(string $database = null)
     {
         return $this->findByDatabase($this->prepareDatabaseArgument($database));
     }
 
-    public function findByGuid(string $guid): ?Document
+    public function findByGuid(string $guid): ?DocumentInterface
     {
         list($database, $id) = $this->splitGuid($guid);
 
@@ -147,12 +165,19 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
         return $this->convertQueryResult($this->createQuery());
     }
 
-    public function countAll(string $database = null)
+    //public function countAll(string $database = null)
+    //{
+    //    return $this->countByDatabase($database);
+    //}
+
+    public function gx(): iterable
     {
-        return $this->countByDatabase($database);
+        yield 'a';
+
+        return [];
     }
 
-    public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): array
+    public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): iterable
     {
         $query = $this->createQuery();
 
@@ -180,25 +205,7 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
         $resultCollection = $this->convertQueryResult($query);
 
         // Filter using the remaining properties
-        $filteredResultCollection = [];
-        $filteredResultCollectionCount = 0;
-
-        /*
-         * Loop through each found Document and check each of the properties
-         * that were not filtered in the query
-         */
-        foreach ($resultCollection as $currentDocument) {
-            if ($this->documentMatchesProperties($properties, $currentDocument)) {
-                $filteredResultCollection[] = $currentDocument;
-
-                $filteredResultCollectionCount += 1;
-                if ($filteredResultCollectionCount >= $limit) {
-                    break;
-                }
-            }
-        }
-
-        return $filteredResultCollection;
+        return $this->documentFilter->filterByProperties($resultCollection, $properties, $limit);
     }
 
     /**
@@ -221,7 +228,7 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
      * Return all objects of the given Document database
      *
      * @param string $database
-     * @return Document[]|QueryResultInterface
+     * @return DocumentInterface[]|QueryResultInterface
      */
     public function findByDatabase(string $database)
     {
@@ -250,13 +257,14 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
      *
      * @param string $database
      * @param string $id
-     * @return Document
+     * @return DocumentInterface
      */
-    public function findOneByDatabaseAndId(string $database, string $id): ?Document
+    public function findOneByDatabaseAndId(string $database, string $id): ?DocumentInterface
     {
         /** @var Query $query */
         $query = $this->createQuery();
         InvalidDatabaseNameException::assertValidDatabaseName($database);
+        InvalidIdException::assertValidId($id);
         $constraint = $query->logicalAnd(
             $query->equals('db', $database),
             $query->equals('id', $id)
@@ -269,35 +277,32 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
      * Remove all Documents from the given database
      *
      * @param string $database
-     * @return Statement
      */
-    public function removeAllFromDatabase(string $database): Statement
+    public function removeAllFromDatabase(string $database): void
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
-        /** @noinspection SqlResolve */
-        return $this->getDatabaseConnection()->executeQuery(
-            sprintf('UPDATE %s SET deleted=2 WHERE db=?', $this->getRawDatabaseTableName()),
-            [$database]
-        );
+        foreach ($this->findByDatabase($database) as $document) {
+            $this->remove($document);
+        }
     }
 
     /**
      * @param Query               $query
      * @param ConstraintInterface $constraint
-     * @return Document|null
+     * @return DocumentInterface|null
      */
     private function findOneByConstraint(
         Query $query,
         ConstraintInterface $constraint
-    ): ?Document {
+    ): ?DocumentInterface {
         $query->matching(
             $constraint
         );
 
         $query->setLimit(1);
         if (!$this->useCustomDataMapping) {
-            /** @var Document $first */
+            /** @var DocumentInterface $first */
             $first = $query->execute()->getFirst();
 
             return $first;
@@ -314,7 +319,7 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
     /**
      * Return a query for objects of this repository
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryInterface|Query
+     * @return QueryInterface|Query
      */
     public function createQuery()
     {
@@ -331,12 +336,12 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
      *
      * @param string $methodName The name of the magic method
      * @param string $arguments  The arguments of the magic method
-     * @throws \TYPO3\CMS\Extbase\Persistence\Generic\Exception\UnsupportedMethodException
      * @return mixed
+     * @throws UnsupportedMethodException
      */
     public function __call($methodName, $arguments)
     {
-        throw new \TYPO3\CMS\Extbase\Persistence\Generic\Exception\UnsupportedMethodException(
+        throw new UnsupportedMethodException(
             'The method "' . $methodName . '" is not supported by the repository.', 1233180480
         );
     }
@@ -345,7 +350,7 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
      * Convert the query results into Documents
      *
      * @param array[] $collection
-     * @return Document[]
+     * @return DocumentInterface[]
      */
     private function convertCollection(array $collection): array
     {
@@ -356,7 +361,7 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
      * Convert the query result into Documents
      *
      * @param QueryInterface $query
-     * @return Document[]|QueryResultInterface
+     * @return DocumentInterface[]|QueryResultInterface
      */
     private function convertQueryResult(QueryInterface $query)
     {
@@ -371,34 +376,28 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
     /**
      * Invoked before a Document in the repository will be changed
      *
-     * @param Document $document
+     * @param DocumentInterface $document
      */
     private function willChangeDocument($document)
     {
+        // noop
     }
 
     /**
      * Invoked after a Document in the repository will be changed
      *
-     * @param Document $document
+     * @param DocumentInterface $document
      */
     private function didChangeDocument($document)
     {
+        // noop
     }
 
     /**
-     * @return string
+     * @param DocumentInterface $object
+     * @return DocumentInterface
      */
-    private function getRawDatabaseTableName(): string
-    {
-        return 'tx_documentstorage_domain_model_document';
-    }
-
-    /**
-     * @param Document $object
-     * @return Document
-     */
-    private function checkDocumentDatabase(Document $object): Document
+    private function checkDocumentDatabase(DocumentInterface $object): DocumentInterface
     {
         if (!$object->getDb()) {
             throw new NoDatabaseSelectedException(
@@ -408,14 +407,6 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
         }
 
         return $object;
-    }
-
-    /**
-     * @return \TYPO3\CMS\Core\Database\Connection
-     */
-    private function getDatabaseConnection()
-    {
-        return $this->connectionPool->getConnectionForTable($this->getRawDatabaseTableName());
     }
 
     private function prepareDatabaseArgument(?string $database): string
@@ -438,22 +429,5 @@ class BaseDocumentRepository extends Repository implements DocumentRepositoryInt
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
         return [$database, $id];
-    }
-
-    /**
-     * @param array    $properties
-     * @param Document $currentDocument
-     * @return bool
-     */
-    private function documentMatchesProperties(array $properties, Document $currentDocument): bool
-    {
-        $currentDocumentData = $currentDocument->getUnpackedData();
-        foreach ($properties as $propertyKey => $propertyValue) {
-            if ($propertyValue !== ObjectAccess::getPropertyPath($currentDocumentData, $propertyKey)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

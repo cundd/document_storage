@@ -9,16 +9,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ListCommandController extends AbstractCommandController
 {
-    protected static $defaultName = 'document-storage:list';
-
-    /**
-     * Configure the command by defining the name, options and arguments
-     */
     protected function configure()
     {
-        $help = 'List all databases.' . LF . 'If you want to get more detailed information, use the --verbose option.';
-        $this->setDescription('List all databases')
-            ->setHelp($help);
+        $help = 'Display a list of all databases.';
+        $this->setDescription('List all databases')->setHelp($help);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -44,5 +38,4 @@ class ListCommandController extends AbstractCommandController
             );
         }
     }
-
 }
