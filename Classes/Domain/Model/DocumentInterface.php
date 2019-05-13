@@ -12,11 +12,6 @@ use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 interface DocumentInterface
 {
     /**
-     * Name of the property that holds the data
-     */
-    public const DATA_PROPERTY_NAME = 'dataProtected';
-
-    /**
      * Return the Documents global unique identifier
      *
      * @return string

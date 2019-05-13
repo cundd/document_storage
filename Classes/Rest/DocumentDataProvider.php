@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Rest;
 
+use Cundd\DocumentStorage\Constants;
 use Cundd\DocumentStorage\Domain\Model\Document;
+use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepository;
 use Cundd\DocumentStorage\Exception\InvalidIdException;
 use Cundd\DocumentStorage\Persistence\DataMapper;
@@ -77,6 +79,11 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         return $this->repository->countAll();
     }
 
+    /**
+     * @param array|int|string $identifier
+     * @param ResourceType     $resourceType
+     * @return DocumentInterface|null
+     */
     public function fetchModel($identifier, ResourceType $resourceType)
     {
         return $this->repository->findById($identifier);
@@ -141,9 +148,14 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         }
     }
 
+    /**
+     * @param DocumentInterface $model
+     * @param string            $propertyParameter
+     * @return array|bool|float|int|mixed|string|null
+     */
     public function getModelProperty($model, string $propertyParameter)
     {
-        assert($model instanceof Document);
+        assert($model instanceof DocumentInterface);
         $propertyKey = $this->convertPropertyParameterToKey($propertyParameter);
 
         $normalizedGetter = 'get' . ucfirst($propertyKey);
@@ -167,7 +179,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     /**
      * Returns the data from the given model
      *
-     * @param object|null $model
+     * @param DocumentInterface|null $model
      * @return array
      */
     public function getModelData($model)
@@ -176,7 +188,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
             return null;
         }
 
-        assert($model instanceof Document);
+        assert($model instanceof DocumentInterface);
         $unpackedData = $model->getUnpackedData();
         if ($unpackedData === null) {
             $unpackedData = [];
@@ -195,7 +207,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         );
 
         // Remove the already assigned entries
-        unset($properties[Document::DATA_PROPERTY_NAME]);
+        unset($properties[Constants::DATA_PROPERTY_NAME]);
         unset($properties['db']);
         unset($properties['modificationTime']);
         unset($properties['creationTime']);

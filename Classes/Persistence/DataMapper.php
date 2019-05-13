@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Persistence;
 
+use Cundd\DocumentStorage\Constants;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Exception\InvalidDocumentException;
@@ -67,10 +68,10 @@ class DataMapper
          * 'dataProtected' and set it first
          */
         if (isset($row['data_protected'])) {
-            $row[Document::DATA_PROPERTY_NAME] = $row['data_protected'];
+            $row[Constants::DATA_PROPERTY_NAME] = $row['data_protected'];
             unset($row['data_protected']);
         }
-        $key = Document::DATA_PROPERTY_NAME;
+        $key = Constants::DATA_PROPERTY_NAME;
         if (isset($row[$key])) {
             $document->setValueForKey($key, $row[$key]);
             unset($row[$key]);

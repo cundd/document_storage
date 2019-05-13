@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Model;
 
+use Cundd\DocumentStorage\Constants;
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Cundd\DocumentStorage\Exception\InvalidIdException;
@@ -169,7 +170,7 @@ class Document extends AbstractEntity implements DocumentInterface
 
     public function setValueForKey(string $key, $value): DocumentInterface
     {
-        if ($key === self::DATA_PROPERTY_NAME) {
+        if ($key === Constants::DATA_PROPERTY_NAME) {
             $this->dataProtected = $value;
             $this->_dataUnpacked = null;
 
