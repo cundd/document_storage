@@ -41,6 +41,27 @@ abstract class FixedDatabaseBridge extends AbstractBridge
         $this->database = $database;
     }
 
+    /**
+     * @param string $uid The identifier of the object to find
+     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     * @see findByIdentifier()
+     */
+    public function findByUid($uid)
+    {
+        return $this->findByIdentifier($uid);
+    }
+
+    /**
+     * Find an object matching the given ID
+     *
+     * @param string $identifier The identifier of the object to find
+     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     */
+    public function findByIdentifier($identifier)
+    {
+        return $this->findById((string)$identifier);
+    }
+
     public function findAll()
     {
         return $this->baseRepository->findByDatabase($this->getDatabase());

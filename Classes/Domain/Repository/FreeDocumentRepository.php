@@ -9,8 +9,10 @@ use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 use Cundd\DocumentStorage\Exception\NoDatabaseSelectedException;
 use Cundd\DocumentStorage\Persistence\Repository\AbstractBridge;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
+use InvalidArgumentException;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
+use function is_string;
 
 /**
  * Free Document Repository provides access to any Database (specified in each Document)
@@ -34,6 +36,35 @@ class FreeDocumentRepository extends AbstractBridge
         string $objectType = Document::class
     ) {
         parent::__construct($objectManager, $baseRepository, $objectType);
+    }
+
+    /**
+     * @param string $uid The identifier of the object to find
+     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     * @see findByIdentifier()
+     */
+    public function findByUid($uid)
+    {
+        return $this->findByIdentifier($uid);
+    }
+
+    /**
+     * Find an object matching the given GUID
+     *
+     * In contrast to the default Repositories the method requires the argument to be a GUID string
+     *
+     * @param string $identifier The identifier of the object to find
+     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     */
+    public function findByIdentifier($identifier)
+    {
+        if (!is_string($identifier)) {
+            throw new InvalidArgumentException(
+                'FreeDocumentRepository::findByUid() requires the argument to be a GUID string'
+            );
+        }
+
+        return $this->findByGuid($identifier);
     }
 
     /**
