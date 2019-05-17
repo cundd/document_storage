@@ -16,6 +16,8 @@ use Cundd\Rest\DataProvider\IdentityProviderInterface;
 use Cundd\Rest\Domain\Model\ResourceType;
 use Cundd\Rest\Log\LoggerInterface;
 use Cundd\Rest\ObjectManagerInterface;
+use JsonSerializable;
+use TYPO3\CMS\Extbase\Object\ObjectManagerInterface as TYPO3ObjectManagerInterface;
 
 class DocumentDataProvider extends DataProvider implements DataProviderInterface
 {
@@ -56,7 +58,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     ) {
         parent::__construct($objectManager, $extractor, $identityProvider, $logger);
         $this->repository = new DocumentRepository(
-            $objectManager->get(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface::class),
+            $objectManager->get(TYPO3ObjectManagerInterface::class),
             $databaseName
         );
         $this->dataMapper = $dataMapper ?? $objectManager->get(DataMapper::class);
@@ -188,7 +190,15 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
             return null;
         }
 
+        if ($model instanceof JsonSerializable) {
+            return $model->jsonSerialize();
+        }
+
         assert($model instanceof DocumentInterface);
+        if (!($model instanceof Document)) {
+            return parent::getModelData($model);
+        }
+
         $unpackedData = $model->getUnpackedData();
         if ($unpackedData === null) {
             $unpackedData = [];
