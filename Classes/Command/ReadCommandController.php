@@ -19,13 +19,20 @@ class ReadCommandController extends AbstractCommandController
             ->addArgument('database', InputArgument::REQUIRED, 'Name of the database')
             ->addArgument('id', InputArgument::OPTIONAL, 'ID of the Document to show (omit to show all)')
             ->addOption('count', 'c', InputOption::VALUE_NONE, 'Count the Documents in the database')
-            ->addOption('short', 's', InputOption::VALUE_NONE, 'Show only the headers of the Documents');
+            ->addOption('short', 's', InputOption::VALUE_NONE, 'Show only the headers of the Documents')
+            ->addOption(
+                'key-paths',
+                'k',
+                InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
+                'Key-path(s) of Document values to output'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $db = $input->getArgument('database');
         $id = $input->getArgument('id');
+        $keyPaths = $input->getOption('key-paths');
 
         $short = $input->getOption('short');
         if ($input->getOption('count')) {
@@ -42,14 +49,14 @@ class ReadCommandController extends AbstractCommandController
                 return 1;
             }
 
-            $this->outputDocuments($output, $documents, !$short);
+            $this->outputDocuments($output, $documents, !$short, $keyPaths);
 
             return 0;
         }
 
         $document = $this->getDocument($output, $db, $id);
         if ($document) {
-            $this->outputDocument($output, $document, !$short);
+            $this->outputDocument($output, $document, !$short, $keyPaths);
 
             return 0;
         } else {

@@ -8,6 +8,7 @@ use Cundd\DocumentStorage\Domain\Repository\DatabaseRepository;
 use Cundd\DocumentStorage\Domain\Repository\FreeDocumentRepository;
 use Cundd\DocumentStorage\Persistence\DataMapper;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository;
+use Cundd\DocumentStorage\Service\JsonFormatter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -15,8 +16,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
-use function preg_replace;
-use function str_replace;
+use function json_decode;
+use function sprintf;
 
 abstract class AbstractCommandController extends Command
 {
@@ -96,28 +97,13 @@ abstract class AbstractCommandController extends Command
     /**
      * Returns a formatted json-encoded version of the given data
      *
-     * @param mixed $data         The data to format
-     * @param bool  $isJsonString Set this to TRUE if the given data already is a JSON string
+     * @param mixed $data The data to format
+     * @param bool  $withColors
      * @return string
      */
-    protected function formatJsonData($data, bool $isJsonString = false, bool $withColors = true)
+    protected function formatJsonData($data, bool $withColors = true)
     {
-        if ($isJsonString) {
-            $data = json_decode((string)$data, true);
-        }
-
-        $output = json_encode($data, JSON_PRETTY_PRINT);
-        if (!$withColors) {
-            return $output;
-        }
-
-        $output = preg_replace('!"([^"]+)":!', '<fg=yellow>"$1"</>:', $output);
-        $output = preg_replace('!"([^"]*)"(,?)$!m', '<fg=green>"$1"</>$2', $output);
-        $output = preg_replace('!(-?\d+\.\d+)(,?)$!m', '<fg=magenta>$1</>$2', $output);
-        $output = preg_replace('!(-?\d+)(,?)$!m', '<fg=red>$1</>$2', $output);
-        $output = str_replace(': null', ': <fg=blue>: null</>', $output);
-
-        return $output;
+        return (new JsonFormatter())->formatJsonData($data, $withColors);
     }
 
     /**
@@ -126,11 +112,16 @@ abstract class AbstractCommandController extends Command
      * @param OutputInterface $output
      * @param iterable        $documents
      * @param bool            $showBody
+     * @param array           $keyPaths
      */
-    protected function outputDocuments(OutputInterface $output, iterable $documents, bool $showBody = false): void
-    {
+    protected function outputDocuments(
+        OutputInterface $output,
+        iterable $documents,
+        bool $showBody = false,
+        array $keyPaths = []
+    ): void {
         foreach ($documents as $document) {
-            $this->outputDocument($output, $document, $showBody);
+            $this->outputDocument($output, $document, $showBody, $keyPaths);
         }
     }
 
@@ -140,11 +131,13 @@ abstract class AbstractCommandController extends Command
      * @param OutputInterface $output
      * @param Document        $document
      * @param bool            $showBody
+     * @param array           $keyPaths
      */
     protected function outputDocument(
         OutputInterface $output,
         Document $document,
-        bool $showBody = false
+        bool $showBody = false,
+        array $keyPaths = []
     ): void {
         $output->writeln(
             '<info>'
@@ -153,9 +146,15 @@ abstract class AbstractCommandController extends Command
             . '</info>'
         );
 
-        if ($showBody) {
-            $data = $document->getDataProtected() ?? '{}';
-            $output->writeln($this->formatJsonData($data, true) . PHP_EOL);
+        if ($keyPaths) {
+            foreach ($keyPaths as $keyPath) {
+                $output->writeln(sprintf('Data for key-path <options=bold>%s</>:', $keyPath));
+                $data = $document->valueForKeyPath($keyPath);
+                $this->writeJsonData($output, $data);
+            }
+        } elseif ($showBody) {
+            $data = $document->getDataProtected() ? json_decode((string)$document->getDataProtected(), true) : [];
+            $this->writeJsonData($output, $data);
         }
     }
 
@@ -169,5 +168,15 @@ abstract class AbstractCommandController extends Command
         }
 
         return $this->objectManager;
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param array|null      $data
+     */
+    protected function writeJsonData(OutputInterface $output, ?array $data): void
+    {
+        $output->writeln($this->formatJsonData($data));
+        $output->writeln('');
     }
 }
