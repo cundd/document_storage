@@ -5,6 +5,7 @@ namespace Cundd\DocumentStorage\Service;
 
 use Cundd\DocumentStorage\Domain\Model\Document;
 use InvalidArgumentException;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use UnexpectedValueException;
 use function json_decode;
@@ -13,17 +14,19 @@ use function sprintf;
 class OutputHelper implements OutputHelperInterface
 {
     public function outputDocuments(
+        InputInterface $input,
         OutputInterface $output,
         iterable $documents,
         bool $showBody = false,
         array $keyPaths = []
     ): void {
         foreach ($documents as $document) {
-            $this->outputDocument($output, $document, $showBody, $keyPaths);
+            $this->outputDocument($input, $output, $document, $showBody, $keyPaths);
         }
     }
 
     public function outputDocument(
+        InputInterface $input,
         OutputInterface $output,
         Document $document,
         bool $showBody = false,
@@ -40,11 +43,11 @@ class OutputHelper implements OutputHelperInterface
             foreach ($keyPaths as $keyPath) {
                 $output->writeln(sprintf('Data for key-path <options=bold>%s</>:', $keyPath));
                 $data = $this->resolveKeyPath($document, $keyPath);
-                $this->writeJsonData($output, $data);
+                $this->writeOutput($input, $output, $data);
             }
         } elseif ($showBody) {
             $data = $document->getDataProtected() ? json_decode((string)$document->getDataProtected(), true) : [];
-            $this->writeJsonData($output, $data);
+            $this->writeOutput($input, $output, $data);
         }
     }
 
@@ -119,5 +122,23 @@ class OutputHelper implements OutputHelperInterface
         }
 
         return $result;
+    }
+
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     * @param                 $data
+     */
+    protected function writeOutput(InputInterface $input, OutputInterface $output, $data): void
+    {
+        $format = $input->hasArgument('format') ? $input->getArgument('format') : 'json';
+        switch ($format) {
+            case 'json':
+                $this->writeJsonData($output, $data);
+
+                return;
+            default:
+                throw new UnexpectedValueException(sprintf('Format "%s" is not implemented', $format));
+        }
     }
 }

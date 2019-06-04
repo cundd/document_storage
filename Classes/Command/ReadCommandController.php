@@ -49,14 +49,14 @@ class ReadCommandController extends AbstractCommandController
                 return 1;
             }
 
-            $this->outputDocuments($output, $documents, !$short, $keyPaths);
+            $this->outputDocuments($input, $output, $documents, !$short, $keyPaths);
 
             return 0;
         }
 
         $document = $this->getDocument($output, $db, $id);
         if ($document) {
-            $this->outputDocument($output, $document, !$short, $keyPaths);
+            $this->outputDocument($input, $output, $document, !$short, $keyPaths);
 
             return 0;
         } else {

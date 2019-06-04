@@ -6,6 +6,7 @@ namespace Cundd\DocumentStorage\Command;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Service\OutputHelper;
 use Cundd\DocumentStorage\Service\OutputHelperInterface;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 trait DocumentOutputTrait
@@ -18,34 +19,38 @@ trait DocumentOutputTrait
     /**
      * Displays information about the given Documents
      *
+     * @param InputInterface  $input
      * @param OutputInterface $output
      * @param iterable        $documents
      * @param bool            $showBody
      * @param array           $keyPaths
      */
     protected function outputDocuments(
+        InputInterface $input,
         OutputInterface $output,
         iterable $documents,
         bool $showBody = false,
         array $keyPaths = []
     ): void {
-        $this->getOutputHelper()->outputDocuments($output, $documents, $showBody, $keyPaths);
+        $this->getOutputHelper()->outputDocuments($input, $output, $documents, $showBody, $keyPaths);
     }
 
     /**
      * Displays information about the given Document
      *
+     * @param InputInterface  $input
      * @param OutputInterface $output
      * @param Document        $document
      * @param bool            $showBody
      * @param array           $keyPaths
      */
     protected function outputDocument(
+        InputInterface $input,
         OutputInterface $output,
         Document $document,
         bool $showBody = false,
         array $keyPaths = []
     ): void {
-        $this->getOutputHelper()->outputDocument($output, $document, $showBody, $keyPaths);;
+        $this->getOutputHelper()->outputDocument($input, $output, $document, $showBody, $keyPaths);;
     }
 }

@@ -44,7 +44,7 @@ class CreateCommandController extends AbstractCommandController
         $document->setId($id);
         $document->setDb($db);
 
-        $this->outputDocument($output, $document);
+        $this->outputDocument($input, $output, $document);
         $documentRepository->add($document);
         $this->persistChanges();
         $output->writeln('<info>Saved</info>');

@@ -25,7 +25,7 @@ class DeleteCommandController extends AbstractCommandController
 
         $document = $this->getDocument($output, $db, $id);
         if ($document) {
-            $this->outputDocument($output, $document, !$output->isQuiet());
+            $this->outputDocument($input, $output, $document, !$output->isQuiet());
             $this->getDocumentRepository()->remove($document);
             $this->persistChanges();
             $output->writeln("<info>Removed $db/$id</info>");
