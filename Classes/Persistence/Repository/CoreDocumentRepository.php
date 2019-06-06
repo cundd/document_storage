@@ -165,20 +165,22 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
         return $this->convertQueryResult($this->createQuery());
     }
 
-    //public function countAll(string $database = null)
-    //{
-    //    return $this->countByDatabase($database);
-    //}
-
-    public function gx(): iterable
-    {
-        yield 'a';
-
-        return [];
-    }
-
-    public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): iterable
-    {
+    /**
+     * Search for Documents matching the given properties
+     *
+     * If `addDataConstraint` is TRUE the SQL `dataProtected LIKE '%propertyValue%'` will be added.
+     * To use the documentFilter only for filtering set it to FALSE
+     *
+     * @param array   $properties        Dictionary of property keys and values
+     * @param integer $limit             Limit the number of matches
+     * @param bool    $addDataConstraint If TRUE the SQL `dataProtected LIKE '%propertyValue%'` will be added
+     * @return DocumentInterface[]
+     */
+    public function findWithProperties(
+        array $properties,
+        int $limit = PHP_INT_MAX,
+        bool $addDataConstraint = true
+    ): iterable {
         $query = $this->createQuery();
 
         $constraintsCollection = [];
@@ -195,6 +197,11 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
             if (isset($properties[$realDatabaseColumn])) {
                 $constraintsCollection[] = $query->equals($realDatabaseColumn, $properties[$realDatabaseColumn]);
                 unset($properties[$realDatabaseColumn]);
+            }
+        }
+        if ($addDataConstraint) {
+            foreach ($properties as $property => $propertyValue) {
+                $constraintsCollection[] = $query->like('dataProtected', '%' . $propertyValue . '%');
             }
         }
         if (!empty($constraintsCollection)) {
