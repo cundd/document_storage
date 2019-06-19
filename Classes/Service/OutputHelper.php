@@ -3,13 +3,19 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Service;
 
+use ArrayAccess;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use UnexpectedValueException;
+use function is_array;
+use function is_callable;
+use function is_object;
 use function json_decode;
+use function method_exists;
 use function sprintf;
+use function ucfirst;
 
 class OutputHelper implements OutputHelperInterface
 {
@@ -96,11 +102,11 @@ class OutputHelper implements OutputHelperInterface
                 throw new UnexpectedValueException(sprintf('Data of lead key-path "%s" is not iterable', $leadKeyPath));
             }
 
-            return $this->valueForKeyPath($leadResult, ltrim($tail, '.'));
+            return $this->valueForAsteriskKeyPath($leadResult, ltrim($tail, '.'));
 
         }
 
-        return $document->valueForKeyPath($keyPath);
+        return $this->valueForKeyPath($document, $keyPath);
     }
 
     /**
@@ -108,20 +114,45 @@ class OutputHelper implements OutputHelperInterface
      * @param string   $keyPath
      * @return array
      */
-    private function valueForKeyPath(iterable $leadResult, string $keyPath): array
+    private function valueForAsteriskKeyPath(iterable $leadResult, string $keyPath): array
     {
         $result = [];
         foreach ($leadResult as $item) {
-            $result[] = array_reduce(
-                explode('.', $keyPath),
-                function ($carry, string $key) {
-                    return is_array($carry) && isset($carry[$key]) ? $carry[$key] : null;
-                },
-                $item
-            );
+            $result[] = $this->valueForKeyPath($item, $keyPath);
         }
 
         return $result;
+    }
+
+    /**
+     * @param mixed  $input
+     * @param string $keyPath
+     * @return array
+     */
+    private function valueForKeyPath($input, string $keyPath)
+    {
+        return array_reduce(
+            explode('.', $keyPath),
+            function ($carry, string $key) {
+                if (is_array($carry) && isset($carry[$key])) {
+                    return $carry[$key];
+                }
+
+                if (is_object($carry)) {
+                    $getterName = 'get' . ucfirst($key);
+                    if (is_callable([$carry, $getterName]) && method_exists($carry, $getterName)) {
+                        return $carry->$getterName();
+                    }
+
+                    if ($carry instanceof ArrayAccess) {
+                        return $carry->offsetGet($key);
+                    }
+                }
+
+                return null;
+            },
+            $input
+        );
     }
 
     /**
