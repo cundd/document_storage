@@ -11,17 +11,17 @@
  ***************************************************************/
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Document Storage',
-    'description' => '',
-    'category' => 'services',
-    'author' => 'Daniel Corn',
-    'author_email' => 'info@cundd.net',
-    'state' => 'alpha',
-    'uploadfolder' => 0,
-    'createDirs' => '',
+    'title'            => 'Document Storage',
+    'description'      => '',
+    'category'         => 'services',
+    'author'           => 'Daniel Corn',
+    'author_email'     => 'info@cundd.net',
+    'state'            => 'alpha',
+    'uploadfolder'     => 0,
+    'createDirs'       => '',
     'clearCacheOnLoad' => 0,
-    'version' => '0.1.0',
-    'constraints' => [
+    'version'          => '0.2.0',
+    'constraints'      => [
         'depends' => [
             'typo3' => '9.5.3-9.5.99',
         ],
