@@ -49,16 +49,28 @@ abstract class AbstractBridge implements DocumentRepositoryInterface
      */
     abstract protected function checkDocumentDatabase(DocumentInterface $object): DocumentInterface;
 
+    /**
+     * @param DocumentInterface $object
+     * @inheritDoc
+     */
     public function add($object)
     {
         $this->baseRepository->add($this->checkDocumentDatabase($object));
     }
 
+    /**
+     * @param DocumentInterface $object
+     * @inheritDoc
+     */
     public function remove($object)
     {
         $this->baseRepository->remove($this->checkDocumentDatabase($object));
     }
 
+    /**
+     * @param DocumentInterface $modifiedObject
+     * @inheritDoc
+     */
     public function update($modifiedObject)
     {
         $this->baseRepository->update($this->checkDocumentDatabase($modifiedObject));
