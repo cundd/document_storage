@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Cundd\DocumentStorage\Service;
 
 use ArrayAccess;
+use Cundd\DocumentStorage\Command\Output\NotFoundException;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -87,13 +88,14 @@ class OutputHelper implements OutputHelperInterface
     private function resolveKeyPath(Document $document, string $keyPath)
     {
         $asteriskCount = substr_count($keyPath, '*');
-        if ($asteriskCount > 1) {
-            throw new InvalidArgumentException('Maximum of one asterisk in key-path is supported');
-        } elseif ($asteriskCount === 1) {
+        if ($asteriskCount === 0) {
+            return $this->valueForKeyPath($document, $keyPath);
+        }
 
+        if ($asteriskCount === 1) {
             list($lead, $tail) = explode('*', $keyPath, 2);
             $leadKeyPath = rtrim($lead, '.');
-            $leadResult = $document->valueForKeyPath($leadKeyPath);
+            $leadResult = $document->valueForKeyPath($leadKeyPath, NotFoundException::instance());
 
             if ($leadResult === null) {
                 return null;
@@ -103,10 +105,9 @@ class OutputHelper implements OutputHelperInterface
             }
 
             return $this->valueForAsteriskKeyPath($leadResult, ltrim($tail, '.'));
-
         }
 
-        return $this->valueForKeyPath($document, $keyPath);
+        throw new InvalidArgumentException('Maximum of one asterisk in key-path is supported');
     }
 
     /**
@@ -118,7 +119,7 @@ class OutputHelper implements OutputHelperInterface
     {
         $result = [];
         foreach ($leadResult as $item) {
-            $result[] = $this->valueForKeyPath($item, $keyPath);
+            $result[] = $this->valueForKeyPath($item, $keyPath, NotFoundException::instance());
         }
 
         return $result;
@@ -127,13 +128,14 @@ class OutputHelper implements OutputHelperInterface
     /**
      * @param mixed  $input
      * @param string $keyPath
+     * @param null   $default
      * @return array
      */
-    private function valueForKeyPath($input, string $keyPath)
+    private function valueForKeyPath($input, string $keyPath, $default = null)
     {
         return array_reduce(
             explode('.', $keyPath),
-            function ($carry, string $key) {
+            function ($carry, string $key) use ($default) {
                 if (is_array($carry) && isset($carry[$key])) {
                     return $carry[$key];
                 }
@@ -149,7 +151,7 @@ class OutputHelper implements OutputHelperInterface
                     }
                 }
 
-                return null;
+                return $default;
             },
             $input
         );

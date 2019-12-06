@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Service;
 
+use Cundd\DocumentStorage\Command\Output\NotFoundException;
 use function json_encode;
 use function preg_replace;
 use function str_replace;
@@ -20,7 +21,10 @@ class JsonFormatter
     public function formatJsonData($data, bool $withColors = true)
     {
         $output = json_encode($data, JSON_PRETTY_PRINT);
+        $notFoundSymbolString = '"' . NotFoundException::getSymbol() . '"';
         if (!$withColors) {
+            $output = str_replace($notFoundSymbolString, '< not found >', $output);
+
             return $output;
         }
 
@@ -28,7 +32,8 @@ class JsonFormatter
         $output = preg_replace('!"([^"]*)"(,?)$!m', '<fg=green>"$1"</>$2', $output);
         $output = preg_replace('!(-?\d+\.\d+)(,?)$!m', '<fg=magenta>$1</>$2', $output);
         $output = preg_replace('!(-?\d+)(,?)$!m', '<fg=red>$1</>$2', $output);
-        $output = str_replace(': null', ': <fg=blue>: null</>', $output);
+        $output = preg_replace('!\bnull\b!', '<fg=blue>null</>', $output);
+        $output = str_replace($notFoundSymbolString, '<fg=blue>< not found ></>', $output);
 
         return $output;
     }
