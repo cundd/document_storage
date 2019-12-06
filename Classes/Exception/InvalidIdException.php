@@ -17,7 +17,7 @@ class InvalidIdException extends DomainException
             throw new static('ID must be either a string or integer value', 1389258925);
         }
 
-        $cleanId = str_replace(['-', '_'], '', $id);
+        $cleanId = str_replace(['-', '_'], '', (string)$id);
         if (!trim($cleanId)) {
             throw new static('ID must must not be empty', 1389258924);
         }
