@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use UnexpectedValueException;
+use function array_push;
 use function is_array;
 use function is_callable;
 use function is_object;
@@ -117,9 +118,18 @@ class OutputHelper implements OutputHelperInterface
      */
     private function valueForAsteriskKeyPath(iterable $leadResult, string $keyPath): array
     {
+        if ('' === $keyPath) {
+            $container = [];
+            array_push($container, ...$leadResult);
+
+            return $container;
+        }
+
         $result = [];
         foreach ($leadResult as $item) {
-            $result[] = $this->valueForKeyPath($item, $keyPath, NotFoundException::instance());
+            if ($keyPath) {
+                $result[] = $this->valueForKeyPath($item, $keyPath, NotFoundException::instance());
+            }
         }
 
         return $result;
