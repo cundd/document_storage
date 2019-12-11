@@ -38,6 +38,7 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      * @var DataMapper|null
      */
     private $dataMapper;
+
     /**
      * @var DocumentFilter|null
      */
