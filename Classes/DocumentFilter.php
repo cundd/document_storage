@@ -18,14 +18,19 @@ class DocumentFilter
      * @param QueryResultInterface|DocumentInterface[] $collection
      * @param array                                    $constraints
      * @param int                                      $limit
+     * @param bool                                     $strict Define if the comparison should be strict (using `!==`) or not (using `!=`)
      * @return iterable
      */
-    public function filterByProperties(iterable $collection, array $constraints, int $limit): iterable
-    {
+    public function filterByProperties(
+        iterable $collection,
+        array $constraints,
+        int $limit,
+        bool $strict = true
+    ): iterable {
         $resultCount = 0;
 
         foreach ($collection as $currentDocument) {
-            if ($this->documentMatchesProperties($constraints, $currentDocument)) {
+            if ($this->documentMatchesProperties($constraints, $currentDocument, $strict)) {
                 yield $currentDocument;
 
                 $resultCount += 1;
@@ -39,17 +44,24 @@ class DocumentFilter
     /**
      * @param array             $constraints
      * @param DocumentInterface $currentDocument
+     * @param bool              $strict
      * @return bool
      */
-    private function documentMatchesProperties(array $constraints, DocumentInterface $currentDocument): bool
-    {
+    private function documentMatchesProperties(
+        array $constraints,
+        DocumentInterface $currentDocument,
+        bool $strict
+    ): bool {
         foreach ($constraints as $key => $constraint) {
             if (strpos($key, '.') === false) {
                 $documentValue = $currentDocument->valueForKey($key);
             } else {
                 $documentValue = $currentDocument->valueForKeyPath($key);
             }
-            if ($constraint !== $documentValue) {
+
+            if ($constraint != $documentValue) {
+                return false;
+            } elseif ($strict && $constraint !== $documentValue) {
                 return false;
             }
         }
