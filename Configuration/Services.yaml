@@ -14,6 +14,9 @@ services:
   Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory:
     public: true
 
+  Cundd\DocumentStorage\Rest\DocumentDataProvider:
+    autowire: false
+
   Cundd\DocumentStorage\Command\GeneralCommandController:
     tags:
       - name: 'console.command'
