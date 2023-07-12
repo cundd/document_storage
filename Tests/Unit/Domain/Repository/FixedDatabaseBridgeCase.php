@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Repository;
@@ -51,7 +52,6 @@ abstract class FixedDatabaseBridgeCase extends AbstractDocumentRepositoryCase
         );
         $this->buildRepository()->update($document);
     }
-
 
     public function testRemove()
     {

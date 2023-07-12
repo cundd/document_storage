@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Rest;
 
+use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory;
 use Cundd\DocumentStorage\Persistence\DataMapper;
 use Cundd\Rest\DataProvider\ExtractorInterface;
 use Cundd\Rest\DataProvider\IdentityProviderInterface;
@@ -173,7 +175,7 @@ class DocumentHandler implements HandlerInterface
     }
 
     /**
-     * Returns the Data Provider
+     * Return the Data Provider
      *
      * @param string $databaseName
      * @return DocumentDataProvider
@@ -184,8 +186,9 @@ class DocumentHandler implements HandlerInterface
             $this->objectManager,
             $this->objectManager->get(ExtractorInterface::class),
             $this->objectManager->get(IdentityProviderInterface::class),
-            $this->objectManager->get(LoggerInterface::class),
+            $this->objectManager->get(DocumentRepositoryFactory::class),
             $databaseName,
+            $this->objectManager->get(LoggerInterface::class),
             $this->objectManager->get(DataMapper::class)
         );
     }

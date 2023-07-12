@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests;
@@ -10,7 +11,7 @@ use Cundd\DocumentStorage\Tests\Fixture\SingletonInterface;
 
 class Bootstrap
 {
-    public function run()
+    public function run(): void
     {
         class_alias(AbstractEntity::class, '\\TYPO3\\CMS\\Extbase\\' . 'DomainObject\\AbstractEntity');
         class_alias(RepositoryInterface::class, '\\TYPO3\\CMS\\Extbase\\' . 'Persistence\\RepositoryInterface');

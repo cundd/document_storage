@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Repository;
@@ -10,12 +11,17 @@ use Cundd\DocumentStorage\Domain\Repository\FreeDocumentRepository;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
 use DateTime;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+
 use function count;
+
 use const PHP_INT_MAX;
 
 abstract class AbstractDocumentRepositoryCase extends TestCase
 {
+    use ProphecyTrait;
+
     abstract protected function buildRepositoryWithCore(
         CoreDocumentRepositoryInterface $coreDocumentRepository
     ): DocumentRepositoryInterface;
@@ -105,7 +111,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
     }
 
     /**
-     * @param callable $configureCoreRepositoryProphecy
+     * @param callable|null $configureCoreRepositoryProphecy
      * @return DocumentRepositoryInterface
      */
     protected function buildRepository(?callable $configureCoreRepositoryProphecy = null): DocumentRepositoryInterface

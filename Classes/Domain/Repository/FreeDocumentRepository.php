@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Repository;
@@ -10,7 +11,6 @@ use Cundd\DocumentStorage\Exception\NoDatabaseSelectedException;
 use Cundd\DocumentStorage\Persistence\Repository\AbstractBridge;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
 use InvalidArgumentException;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use function is_string;
 
@@ -26,16 +26,14 @@ class FreeDocumentRepository extends AbstractBridge
     /**
      * Construct a new Document Repository
      *
-     * @param ObjectManagerInterface               $objectManager
-     * @param CoreDocumentRepositoryInterface|null $baseRepository
-     * @param string                               $objectType
+     * @param CoreDocumentRepositoryInterface $baseRepository
+     * @param string                          $objectType
      */
     public function __construct(
-        ?ObjectManagerInterface $objectManager = null,
-        ?CoreDocumentRepositoryInterface $baseRepository = null,
+        CoreDocumentRepositoryInterface $baseRepository,
         string $objectType = Document::class
     ) {
-        parent::__construct($objectManager, $baseRepository, $objectType);
+        parent::__construct($baseRepository, $objectType);
     }
 
     /**
@@ -43,7 +41,7 @@ class FreeDocumentRepository extends AbstractBridge
      * @return DocumentInterface|null The matching object if found, otherwise NULL
      * @see findByIdentifier()
      */
-    public function findByUid($uid)
+    public function findByUid($uid): ?DocumentInterface
     {
         return $this->findByIdentifier($uid);
     }
@@ -56,7 +54,7 @@ class FreeDocumentRepository extends AbstractBridge
      * @param string $identifier The identifier of the object to find
      * @return DocumentInterface|null The matching object if found, otherwise NULL
      */
-    public function findByIdentifier($identifier)
+    public function findByIdentifier($identifier): ?DocumentInterface
     {
         if (!is_string($identifier)) {
             throw new InvalidArgumentException(
@@ -73,7 +71,7 @@ class FreeDocumentRepository extends AbstractBridge
      * @param string $database
      * @return DocumentInterface[]|QueryResultInterface
      */
-    public function findByDatabase(string $database)
+    public function findByDatabase(string $database): QueryResultInterface|array
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
@@ -113,14 +111,14 @@ class FreeDocumentRepository extends AbstractBridge
         return $this->baseRepository->findByDatabase($database);
     }
 
-    public function countAll(string $database = null)
+    public function countAll(string $database = null): int
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
         return $this->baseRepository->countByDatabase($database);
     }
 
-    public function removeAll(string $database = null)
+    public function removeAll(string $database = null): void
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
@@ -147,10 +145,6 @@ class FreeDocumentRepository extends AbstractBridge
         );
     }
 
-    /**
-     * @param DocumentInterface $object
-     * @return DocumentInterface
-     */
     protected function checkDocumentDatabase(DocumentInterface $object): DocumentInterface
     {
         if (!$object->getDb()) {

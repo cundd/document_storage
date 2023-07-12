@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Repository;
@@ -6,6 +7,7 @@ namespace Cundd\DocumentStorage\Tests\Unit\Domain\Repository;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepository;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryInterface;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
+
 use function bin2hex;
 use function random_bytes;
 
@@ -16,14 +18,14 @@ class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
      */
     private $testDatabaseName;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         /** @noinspection PhpUnhandledExceptionInspection */
         $this->testDatabaseName = bin2hex(random_bytes(12));
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->testDatabaseName);
         parent::tearDown();
@@ -32,7 +34,7 @@ class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
     protected function buildRepositoryWithCore(
         CoreDocumentRepositoryInterface $coreDocumentRepository
     ): DocumentRepositoryInterface {
-        return new DocumentRepository(null, $this->getTestDatabaseName(), $coreDocumentRepository);
+        return new DocumentRepository($this->getTestDatabaseName(), $coreDocumentRepository);
     }
 
     protected function getTestDatabaseName(): string

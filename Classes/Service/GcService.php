@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Service;
@@ -6,6 +7,7 @@ namespace Cundd\DocumentStorage\Service;
 use Cundd\DocumentStorage\Gc\GcWhereExpression;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+
 use function implode;
 use function sprintf;
 use function time;
@@ -14,19 +16,8 @@ class GcService
 {
     private const TABLE_NAME = 'tx_documentstorage_domain_model_document';
 
-    /**
-     * @var ConnectionPool
-     */
-    private $connectionPool;
-
-    /**
-     * GcService constructor
-     *
-     * @param ConnectionPool $connectionPool
-     */
-    public function __construct(ConnectionPool $connectionPool)
+    public function __construct(readonly private ConnectionPool $connectionPool)
     {
-        $this->connectionPool = $connectionPool;
     }
 
     /**
@@ -43,7 +34,7 @@ class GcService
         $sql = sprintf("DELETE FROM %s WHERE $whereExpression", self::TABLE_NAME);
         $stmt = $connection->prepare($sql);
 
-        return $stmt->execute($whereExpression->getParameters());
+        return $stmt->executeStatement($whereExpression->getParameters()) > 0;
     }
 
     /**
@@ -60,9 +51,9 @@ class GcService
         $sql = sprintf("SELECT count(*) FROM %s WHERE $whereExpression", self::TABLE_NAME);
 
         $stmt = $connection->prepare($sql);
-        $stmt->execute($whereExpression->getParameters());
+        $result = $stmt->executeQuery($whereExpression->getParameters());
 
-        return (int)$stmt->fetchColumn();
+        return (int)$result->fetchFirstColumn();
     }
 
     private function getConnection(): Connection

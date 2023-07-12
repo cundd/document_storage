@@ -1,0 +1,52 @@
+services:
+  # general settings
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Cundd\DocumentStorage\:
+    resource: '../Classes/*'
+
+  Cundd\DocumentStorage\Rest\DocumentHandler:
+    public: true
+
+  Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory:
+    public: true
+
+  Cundd\DocumentStorage\Command\GeneralCommandController:
+    tags:
+      - name: 'console.command'
+        command: 'document-storage'
+        description: 'Create a new Document'
+
+  Cundd\DocumentStorage\Command\ListCommandController:
+    tags:
+      - name: 'console.command'
+        command: 'document-storage:list'
+        description: 'List all databases'
+
+  Cundd\DocumentStorage\Command\CreateCommandController:
+    tags:
+      - name: 'console.command'
+        command: 'document-storage:create'
+        description: 'Create a new Document'
+
+  Cundd\DocumentStorage\Command\ReadCommandController:
+    tags:
+      - name: 'console.command'
+        command: 'document-storage:read'
+        description: 'Read Documents from the database'
+
+  Cundd\DocumentStorage\Command\DeleteCommandController:
+    tags:
+      - name: 'console.command'
+        command: 'document-storage:delete'
+        description: 'Remove a Document from the database'
+
+  Cundd\DocumentStorage\Command\GcCommandController:
+    tags:
+      - name: 'console.command'
+        command: 'document-storage:gc'
+        description: 'Permanently remove deleted Documents'
+

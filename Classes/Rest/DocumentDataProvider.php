@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Rest;
@@ -7,6 +8,7 @@ use Cundd\DocumentStorage\Constants;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepository;
+use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory;
 use Cundd\DocumentStorage\Exception\InvalidIdException;
 use Cundd\DocumentStorage\Persistence\DataMapper;
 use Cundd\Rest\DataProvider\DataProvider;
@@ -17,61 +19,38 @@ use Cundd\Rest\Domain\Model\ResourceType;
 use Cundd\Rest\Log\LoggerInterface;
 use Cundd\Rest\ObjectManagerInterface;
 use JsonSerializable;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface as TYPO3ObjectManagerInterface;
 
 class DocumentDataProvider extends DataProvider implements DataProviderInterface
 {
     public const IDENTIFIER_PROPERTY = '__identity';
 
-    /**
-     * @var DocumentRepository
-     */
-    private $repository;
+    private DocumentRepository $repository;
 
-    /**
-     * @var string
-     */
-    private $databaseName;
+    private string $databaseName;
 
-    /**
-     * @var DataMapper
-     */
-    private $dataMapper;
+    private DataMapper $dataMapper;
 
-    /**
-     * Data Provider constructor
-     *
-     * @param ObjectManagerInterface    $objectManager
-     * @param ExtractorInterface        $extractor
-     * @param IdentityProviderInterface $identityProvider
-     * @param LoggerInterface           $logger
-     * @param string                    $databaseName This argument is **not** optional
-     * @param DataMapper|null           $dataMapper
-     */
     public function __construct(
         ObjectManagerInterface $objectManager,
         ExtractorInterface $extractor,
         IdentityProviderInterface $identityProvider,
+        DocumentRepositoryFactory $documentRepositoryFactory,
+        string $databaseName,
         LoggerInterface $logger = null,
-        string $databaseName = '',
         ?DataMapper $dataMapper = null
     ) {
         parent::__construct($objectManager, $extractor, $identityProvider, $logger);
-        $this->repository = new DocumentRepository(
-            $objectManager->get(TYPO3ObjectManagerInterface::class),
-            $databaseName
-        );
+        $this->repository = $documentRepositoryFactory->buildDocumentRepository($databaseName);
         $this->dataMapper = $dataMapper ?? $objectManager->get(DataMapper::class);
         $this->databaseName = $databaseName;
     }
 
-    public function getRepositoryForResourceType(ResourceType $resourceType)
+    public function getRepositoryForResourceType(ResourceType $resourceType): object
     {
         return $this->repository;
     }
 
-
-    public function fetchAllModels(ResourceType $resourceType)
+    public function fetchAllModels(ResourceType $resourceType): iterable
     {
         return $this->repository->findAll();
     }
@@ -82,11 +61,11 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     }
 
     /**
-     * @param array|int|string $identifier
+     * @param int|array|string $identifier
      * @param ResourceType     $resourceType
      * @return DocumentInterface|null
      */
-    public function fetchModel($identifier, ResourceType $resourceType)
+    public function fetchModel(int|array|string $identifier, ResourceType $resourceType): ?object
     {
         return $this->repository->findById($identifier);
     }
@@ -115,7 +94,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     //    return $this->convertIntoModel($data, $resourceType);
     //}
 
-    public function convertIntoModel(array $data, ResourceType $resourceType)
+    public function convertIntoModel(array $data, ResourceType $resourceType): ?object
     {
         // If no data is given return NULL
         if (!$data) {
@@ -155,7 +134,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
      * @param string            $propertyParameter
      * @return array|bool|float|int|mixed|string|null
      */
-    public function getModelProperty($model, string $propertyParameter)
+    public function getModelProperty($model, string $propertyParameter): mixed
     {
         assert($model instanceof DocumentInterface);
         $propertyKey = $this->convertPropertyParameterToKey($propertyParameter);
@@ -181,10 +160,10 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     /**
      * Returns the data from the given model
      *
-     * @param DocumentInterface|null $model
+     * @param mixed $model
      * @return array
      */
-    public function getModelData($model)
+    public function getModelData(mixed $model): ?array
     {
         if (!is_object($model)) {
             return null;

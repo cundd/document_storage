@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Model;
@@ -9,7 +10,7 @@ use Cundd\DocumentStorage\Domain\Model\Document;
 class DictionaryTest extends AbstractDocumentCase
 {
     /**
-     * @var Dictionary
+     * @var Dictionary|null
      */
     protected $fixture = null;
 

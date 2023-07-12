@@ -1,16 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Persistence\Repository;
 
 use Cundd\DocumentStorage\DocumentFilter;
-use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 use Cundd\DocumentStorage\Exception\InvalidIdException;
 use Cundd\DocumentStorage\Exception\NoDatabaseSelectedException;
 use Cundd\DocumentStorage\Persistence\DataMapper;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Exception\UnsupportedMethodException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Qom\ConstraintInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Query;
@@ -32,54 +31,56 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      *
      * @var bool
      */
-    private $useCustomDataMapping = false;
+    private bool $useCustomDataMapping = false;
 
     /**
-     * @var DataMapper|null
+     * @var DataMapper
      */
-    private $dataMapper;
+    private DataMapper $dataMapper;
 
     /**
-     * @var DocumentFilter|null
+     * @var DocumentFilter
      */
-    private $documentFilter;
+    private DocumentFilter $documentFilter;
 
     /**
      * Concrete Repository implementation which will be used by `DocumentRepository` and `FreeDocumentRepository`
      *
-     * @param ObjectManagerInterface $objectManager
-     * @param string                 $objectType
-     * @param DataMapper|null        $dataMapper
-     * @param DocumentFilter|null    $documentFilter
+     * @param string                      $objectType
+     * @param DataMapper                  $dataMapper
+     * @param DocumentFilter              $documentFilter
+     * @param PersistenceManagerInterface $persistenceManager
      */
     private function __construct(
-        ObjectManagerInterface $objectManager,
-        string $objectType = Document::class,
-        ?DataMapper $dataMapper = null,
-        ?DocumentFilter $documentFilter = null
+        string $objectType,
+        DataMapper $dataMapper,
+        DocumentFilter $documentFilter,
+        PersistenceManagerInterface $persistenceManager
     ) {
-        parent::__construct($objectManager);
-        $this->injectPersistenceManager($objectManager->get(PersistenceManagerInterface::class));
-        $this->dataMapper = $dataMapper ?? $objectManager->get(DataMapper::class);
+        parent::__construct();
+        $this->injectPersistenceManager($persistenceManager);
+        $this->dataMapper = $dataMapper;
         $this->objectType = $objectType;
-        $this->documentFilter = $documentFilter ?? $objectManager->get(DocumentFilter::class);
+        $this->documentFilter = $documentFilter;
     }
 
     /**
      * Factory to build the Base Document Repository
      *
-     * @param ObjectManagerInterface $objectManager
-     * @param string                 $objectType
-     * @param DataMapper|null        $dataMapper
+     * @param string                      $objectType
+     * @param DataMapper                  $dataMapper
+     * @param DocumentFilter              $documentFilter
+     * @param PersistenceManagerInterface $persistenceManager
      * @return CoreDocumentRepositoryInterface
      * @internal
      */
     public static function build(
-        ObjectManagerInterface $objectManager,
-        string $objectType = Document::class,
-        ?DataMapper $dataMapper = null
+        string $objectType,
+        DataMapper $dataMapper,
+        DocumentFilter $documentFilter,
+        PersistenceManagerInterface $persistenceManager
     ): CoreDocumentRepositoryInterface {
-        return new static($objectManager, $objectType, $dataMapper);
+        return new static($objectType, $dataMapper, $documentFilter, $persistenceManager);
     }
 
     /**
@@ -143,7 +144,7 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
 
     public function findByGuid(string $guid): ?DocumentInterface
     {
-        list($database, $id) = $this->splitGuid($guid);
+        [$database, $id] = $this->splitGuid($guid);
 
         return $this->findOneByDatabaseAndId($database, $id);
     }
@@ -161,7 +162,7 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
         return $this->findOneById($id);
     }
 
-    public function findAllIgnoreDatabase()
+    public function findAllIgnoreDatabase(): QueryResultInterface|array
     {
         return $this->convertQueryResult($this->createQuery());
     }
@@ -187,7 +188,7 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
         $constraintsCollection = [];
         if (isset($properties['guid'])) {
             $guid = $properties['guid'];
-            list($database, $id) = $this->splitGuid($guid);
+            [$database, $id] = $this->splitGuid($guid);
             $constraintsCollection[] = $query->equals('db', $database);
             $constraintsCollection[] = $query->equals('id', $id);
             unset($properties['guid']);
@@ -201,12 +202,12 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
             }
         }
         if ($addDataConstraint) {
-            foreach ($properties as $property => $propertyValue) {
+            foreach ($properties as $propertyValue) {
                 $constraintsCollection[] = $query->like('dataProtected', '%' . $propertyValue . '%');
             }
         }
         if (!empty($constraintsCollection)) {
-            $query->matching($query->logicalAnd($constraintsCollection));
+            $query->matching($query->logicalAnd(...$constraintsCollection));
         }
 
         // Get the objects
@@ -238,7 +239,7 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      * @param string $database
      * @return DocumentInterface[]|QueryResultInterface
      */
-    public function findByDatabase(string $database)
+    public function findByDatabase(string $database): array|QueryResultInterface
     {
         $query = $this->createQuery();
         $query->matching($query->equals('db', $this->prepareDatabaseArgument($database)));
@@ -433,7 +434,7 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      */
     private function splitGuid(string $guid): array
     {
-        list($database, $id) = explode('/', $guid, 2);
+        [$database, $id] = explode('/', $guid, 2);
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
         return [$database, $id];

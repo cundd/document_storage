@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
@@ -9,11 +10,13 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use function file_get_contents;
+use function json_decode;
+use function json_last_error_msg;
 use const STDIN;
 
 class CreateCommandController extends AbstractCommandController
 {
-    protected function configure()
+    protected function configure(): void
     {
         $help = 'Create a new Document.';
         $this->setDescription('Create a new Document')
@@ -27,7 +30,7 @@ class CreateCommandController extends AbstractCommandController
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $id = $input->getArgument('id');
         $db = $input->getArgument('database');
@@ -40,7 +43,7 @@ class CreateCommandController extends AbstractCommandController
 
         $data = $this->getData($input, $output);
         /** @var Document $document */
-        $document = $this->getDataMapper()->mapSingleRow(Document::class, $data);
+        $document = $this->dataMapper->mapSingleRow(Document::class, $data);
         $document->setId($id);
         $document->setDb($db);
 
@@ -49,7 +52,7 @@ class CreateCommandController extends AbstractCommandController
         $this->persistChanges();
         $output->writeln('<info>Saved</info>');
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**
@@ -57,7 +60,7 @@ class CreateCommandController extends AbstractCommandController
      * @param OutputInterface $output
      * @return bool|mixed|string
      */
-    protected function getData(InputInterface $input, OutputInterface $output)
+    protected function getData(InputInterface $input, OutputInterface $output): mixed
     {
         $dataRaw = $input->getArgument('data');
         if (!$dataRaw) {
@@ -66,6 +69,10 @@ class CreateCommandController extends AbstractCommandController
         if (!$dataRaw) {
             $output->writeln('<question>Insert JSON formatted Document:</question> ');
             do {
+                $rawLine = $this->readRawLine();
+                if (false === $rawLine) {
+                    break;
+                }
                 $dataRaw .= $this->readRawLine();
             } while (null === json_decode($dataRaw));
         }
@@ -78,13 +85,9 @@ class CreateCommandController extends AbstractCommandController
         return $decoded;
     }
 
-    /**
-     * @return string
-     */
-    protected function readRawLine(): string
+    protected function readRawLine(): string|false
     {
         if (function_exists('readline')) {
-            /** @noinspection PhpComposerExtensionStubsInspection */
             return readline();
         } else {
             return (string)stream_get_line(STDIN, 1024, PHP_EOL);

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Persistence;
@@ -10,18 +11,15 @@ use PHPUnit\Framework\TestCase;
 
 class DataMapperTest extends TestCase
 {
-    /**
-     * @var DataMapper
-     */
-    private $fixture;
+    private DataMapper $fixture;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->fixture = new DataMapper();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->fixture);
         parent::tearDown();

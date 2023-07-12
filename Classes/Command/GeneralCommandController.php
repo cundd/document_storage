@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
@@ -9,13 +10,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use function explode;
-use function strpos;
 
 class GeneralCommandController extends AbstractCommandController
 {
     protected static $defaultName = 'document-storage';
 
-    protected function configure()
+    protected function configure(): void
     {
         $help = 'Read Documents from a database or list all databases.';
         $this->setDescription('Show Documents and databases')
@@ -44,19 +44,19 @@ class GeneralCommandController extends AbstractCommandController
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $database = $input->getArgument('database');
         $id = $input->getArgument('id');
 
-        if (strpos($database, '/') !== false) {
+        if ($database && str_contains($database, '/')) {
             if ($id) {
                 $output->writeln('<error>If a GUID is given, the id argument must be omitted</error>');
 
                 return 1;
             }
 
-            list($database, $id) = explode('/', $database);
+            [$database, $id] = explode('/', $database);
         }
 
         if ($database) {

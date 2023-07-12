@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Persistence\Repository;
@@ -8,9 +9,10 @@ use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 use Cundd\DocumentStorage\Exception\InvalidDocumentDatabaseException;
 use Cundd\DocumentStorage\Exception\NoDatabaseSelectedException;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+
 use function array_merge;
 use function sprintf;
+
 use const PHP_INT_MAX;
 
 abstract class FixedDatabaseBridge extends AbstractBridge
@@ -20,24 +22,22 @@ abstract class FixedDatabaseBridge extends AbstractBridge
      *
      * @var string
      */
-    private $database = '';
+    private string $database = '';
 
     /**
      * Constructs a new Repository
      *
-     * @param ObjectManagerInterface               $objectManager
-     * @param string                               $database Identifier of the managed database
-     * @param CoreDocumentRepositoryInterface|null $baseRepository
-     * @param string                               $objectType
+     * @param string $database Identifier of the managed database
+     * @param CoreDocumentRepositoryInterface $baseRepository
+     * @param string $objectType
      */
     public function __construct(
-        ?ObjectManagerInterface $objectManager,
         string $database,
-        ?CoreDocumentRepositoryInterface $baseRepository = null,
+        CoreDocumentRepositoryInterface $baseRepository,
         string $objectType = Document::class
     ) {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
-        parent::__construct($objectManager, $baseRepository, $objectType);
+        parent::__construct($baseRepository, $objectType);
         $this->database = $database;
     }
 

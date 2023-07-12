@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Repository;
@@ -15,15 +16,4 @@ use Cundd\DocumentStorage\Persistence\Repository\FixedDatabaseBridge;
  */
 class DocumentRepository extends FixedDatabaseBridge
 {
-    /**
-     * Return a new repository instance for the given database and optional object type
-     *
-     * @param string $database
-     * @param string $objectType
-     * @return DocumentRepository
-     */
-    public static function createForDatabase(string $database, string $objectType = Document::class)
-    {
-        return new static(null, $database, null, $objectType);
-    }
 }

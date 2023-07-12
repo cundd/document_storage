@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command\Output;
@@ -9,10 +10,7 @@ use Throwable;
 
 class NotFoundException extends RuntimeException implements JsonSerializable
 {
-    /**
-     * @var self
-     */
-    private static $sharedInstance;
+    private static NotFoundException $sharedInstance;
 
     /**
      * Return the shared instance
@@ -35,7 +33,7 @@ class NotFoundException extends RuntimeException implements JsonSerializable
      * @param int            $code
      * @param Throwable|null $previous
      */
-    private function __construct($message = "", $code = 0, Throwable $previous = null)
+    private function __construct(string $message = "", int $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
@@ -45,7 +43,7 @@ class NotFoundException extends RuntimeException implements JsonSerializable
         return 'NotFoundException:LkZ1IGz8671-1MqNg4sMgIptdsr0afk1YcPVNfTNsDs=';
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): string
     {
         return static::getSymbol();
     }

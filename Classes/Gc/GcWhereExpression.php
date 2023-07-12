@@ -1,30 +1,20 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Gc;
 
 use InvalidArgumentException;
+
 use function count;
 use function substr_count;
 
 class GcWhereExpression
 {
-    /**
-     * @var string
-     */
-    private $sqlString;
+    private string $sqlString;
 
-    /**
-     * @var array
-     */
-    private $parameters = [];
+    private array $parameters = [];
 
-    /**
-     * GcWhereExpression constructor.
-     *
-     * @param string $sqlString
-     * @param array  $parameters
-     */
     public function __construct(string $sqlString, array $parameters)
     {
         if (count($parameters) !== substr_count($sqlString, '?')) {
@@ -34,17 +24,11 @@ class GcWhereExpression
         $this->parameters = $parameters;
     }
 
-    /**
-     * @return string
-     */
     public function getSqlString(): string
     {
         return $this->sqlString;
     }
 
-    /**
-     * @return array
-     */
     public function getParameters(): array
     {
         return $this->parameters;

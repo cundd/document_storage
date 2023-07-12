@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
@@ -7,11 +8,12 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function sprintf;
 
 class ReadCommandController extends AbstractCommandController
 {
-    protected function configure()
+    protected function configure(): void
     {
         $help = 'Display a Document/all Documents from the database.';
         $this->setDescription('Read Documents from the database')
@@ -28,7 +30,7 @@ class ReadCommandController extends AbstractCommandController
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $db = $input->getArgument('database');
         $id = $input->getArgument('id');
@@ -39,28 +41,28 @@ class ReadCommandController extends AbstractCommandController
             $count = $this->getDocumentRepository()->countByDatabase($db);
             $output->writeln(sprintf('%d documents in database', $count));
 
-            return 0;
+            return self::SUCCESS;
         }
         if (!$id) {
             $documents = $this->getDocumentRepository()->findByDatabase($db);
             if (count($documents) === 0) {
                 $output->writeln(sprintf('Database "%s" not found', $db));
 
-                return 1;
+                return self::FAILURE;
             }
 
             $this->outputDocuments($input, $output, $documents, !$short, $keyPaths);
 
-            return 0;
+            return self::SUCCESS;
         }
 
         $document = $this->getDocument($output, $db, $id);
         if ($document) {
             $this->outputDocument($input, $output, $document, !$short, $keyPaths);
 
-            return 0;
+            return self::SUCCESS;
         } else {
-            return 1;
+            return self::FAILURE;
         }
     }
 }

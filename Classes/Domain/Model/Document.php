@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Model;
@@ -8,6 +9,7 @@ use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Cundd\DocumentStorage\Exception\InvalidIdException;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+
 use function is_null;
 use function is_scalar;
 use function is_string;
@@ -17,51 +19,46 @@ class Document extends AbstractEntity implements DocumentInterface
     /**
      * ID
      *
-     * @var \string
-     * @identity
+     * @var string
      */
-    protected $id;
+    protected string $id = '';
 
     /**
      * Database
      *
-     * @var \string
-     * @identity
+     * @var string
      */
-    protected $db;
+    protected string $db = '';
 
-    /**
-     * @var \bool
-     */
-    protected $deleted;
+    protected bool $deleted = false;
 
     /**
      * Creation time
      *
      * @var int
      */
-    protected $creationTime;
+    protected int $creationTime = 0;
 
     /**
      * Modification time
      *
      * @var int
      */
-    protected $modificationTime;
+    protected int $modificationTime = 0;
 
     /**
      * Document data
      *
-     * @var \string
+     * @var string|null
      */
-    protected $dataProtected;
+    protected ?string $dataProtected = null;
 
     /**
      * Unpacked Document content
      *
-     * @var array
+     * @var array|null
      */
-    protected $_dataUnpacked = null;
+    protected ?array $_dataUnpacked = null;
 
     final public function getGuid(): ?string
     {
@@ -70,7 +67,7 @@ class Document extends AbstractEntity implements DocumentInterface
         return $guid !== '/' ? $guid : null;
     }
 
-    final public function setId($id)
+    final public function setId(int|string $id): void
     {
         InvalidIdException::assertValidId($id);
         $this->id = (string)$id;
@@ -103,7 +100,7 @@ class Document extends AbstractEntity implements DocumentInterface
      *
      * @param string $content
      */
-    final public function setDataProtected(string $content)
+    final public function setDataProtected(string $content): void
     {
         $this->dataProtected = $content;
         $this->_dataUnpacked = null;
@@ -119,7 +116,7 @@ class Document extends AbstractEntity implements DocumentInterface
         return $this->dataProtected;
     }
 
-    final public function setDb(string $db)
+    final public function setDb(string $db): void
     {
         InvalidDatabaseNameException::assertValidDatabaseName($db);
         $this->db = strtolower($db);
@@ -130,7 +127,7 @@ class Document extends AbstractEntity implements DocumentInterface
         return $this->db;
     }
 
-    public function valueForKey(string $key)
+    public function valueForKey(string $key): mixed
     {
         if (property_exists($this, $key)) {
             return $this->$key;
@@ -144,9 +141,9 @@ class Document extends AbstractEntity implements DocumentInterface
         return $this->valueForUndefinedKey($key);
     }
 
-    public function valueForKeyPath(string $keyPath, $default = null)
+    public function valueForKeyPath(string $keyPath, mixed $default = null): mixed
     {
-        if (strpos($keyPath, '.') === false) {
+        if (!str_contains($keyPath, '.')) {
             return $this->valueForKey($keyPath);
         }
 
@@ -161,10 +158,8 @@ class Document extends AbstractEntity implements DocumentInterface
         return is_null($result) ? $default : $result;
     }
 
-    public function valueForUndefinedKey(
-        /** @noinspection PhpUnusedParameterInspection */
-        string $key
-    ) {
+    public function valueForUndefinedKey(string $key)
+    {
         return null;
     }
 

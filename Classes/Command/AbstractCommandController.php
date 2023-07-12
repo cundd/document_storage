@@ -1,46 +1,35 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
 
+use Cundd\DocumentStorage\DocumentFilter;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Repository\DatabaseRepository;
+use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory;
 use Cundd\DocumentStorage\Domain\Repository\FreeDocumentRepository;
 use Cundd\DocumentStorage\Persistence\DataMapper;
-use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
 abstract class AbstractCommandController extends Command
 {
     use DocumentOutputTrait;
 
-    /**
-     * Document repository
-     *
-     * @var FreeDocumentRepository
-     */
-    private $documentRepository;
+    private FreeDocumentRepository|null $documentRepository;
 
-    /**
-     * @var DatabaseRepository
-     */
-    private $databaseRepository;
-
-    /**
-     * @var ObjectManagerInterface
-     */
-    private $objectManager;
-
-    /**
-     * @var DataMapper
-     */
-    private $dataMapper;
+    public function __construct(
+        readonly private DocumentRepositoryFactory $documentRepositoryFactory,
+        readonly protected DataMapper $dataMapper,
+        readonly private DocumentFilter $documentFilter,
+        readonly private PersistenceManagerInterface $persistenceManager,
+        readonly protected DatabaseRepository $databaseRepository,
+        $name = null
+    ) {
+        parent::__construct($name);
+    }
 
     protected function getDocument(OutputInterface $output, string $db, string $id): ?Document
     {
@@ -57,51 +46,15 @@ abstract class AbstractCommandController extends Command
 
     protected function getDocumentRepository(): FreeDocumentRepository
     {
-        if (!$this->documentRepository) {
-            $objectManager = $this->getObjectManager();
-            $baseDocumentRepository = CoreDocumentRepository::build($objectManager);
-            $this->documentRepository = new FreeDocumentRepository($objectManager, $baseDocumentRepository);
+        if (!isset($this->documentRepository)) {
+            $this->documentRepository = $this->documentRepositoryFactory->buildFreeDocumentRepository();
         }
 
         return $this->documentRepository;
     }
 
-    protected function getDatabaseRepository(): DatabaseRepository
+    protected function persistChanges(): void
     {
-        if (!$this->databaseRepository) {
-            $objectManager = $this->getObjectManager();
-            $this->databaseRepository = new DatabaseRepository(
-                $objectManager,
-                $objectManager->get(ConnectionPool::class)
-            );
-        }
-
-        return $this->databaseRepository;
-    }
-
-    protected function getDataMapper(): DataMapper
-    {
-        if (!$this->dataMapper) {
-            $this->dataMapper = $this->getObjectManager()->get(DataMapper::class);
-        }
-
-        return $this->dataMapper;
-    }
-
-    protected function persistChanges()
-    {
-        $this->getObjectManager()->get(PersistenceManagerInterface::class)->persistAll();
-    }
-
-    /**
-     * @return ObjectManagerInterface
-     */
-    protected function getObjectManager()
-    {
-        if (!$this->objectManager) {
-            $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        }
-
-        return $this->objectManager;
+        $this->persistenceManager->persistAll();
     }
 }

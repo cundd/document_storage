@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Model;
@@ -11,7 +12,7 @@ use Cundd\DocumentStorage\Domain\Model\Document;
 class DocumentTest extends AbstractDocumentCase
 {
     /**
-     * @var Document
+     * @var Document|null
      */
     protected $fixture = null;
 

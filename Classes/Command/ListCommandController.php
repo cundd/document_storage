@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
@@ -9,15 +10,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ListCommandController extends AbstractCommandController
 {
-    protected function configure()
+    protected function configure(): void
     {
         $help = 'Display a list of all databases.';
         $this->setDescription('List all databases')->setHelp($help);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $databases = $this->getDatabaseRepository()->findAll();
+        $databases = $this->databaseRepository->findAll();
         $longestName = array_reduce(
             $databases,
             function ($prev, Database $database) {
@@ -37,5 +38,7 @@ class ListCommandController extends AbstractCommandController
                 . '</info>'
             );
         }
+
+        return self::SUCCESS;
     }
 }

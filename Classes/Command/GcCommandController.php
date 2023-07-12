@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
@@ -14,7 +15,7 @@ use TYPO3\CMS\Core\Utility\MathUtility;
 
 class GcCommandController extends AbstractCommandController
 {
-    protected function configure()
+    protected function configure(): void
     {
         $help = 'Permanently delete all Documents marked as "deleted" from the database.';
         $this->setDescription('Permanently remove deleted Documents')
@@ -23,7 +24,7 @@ class GcCommandController extends AbstractCommandController
             ->addOption('min-age', 'a', InputOption::VALUE_REQUIRED, 'Minimum age in days of the Documents to delete');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $db = $input->getArgument('database');
         $minAge = $this->getMinAge($input);
@@ -37,17 +38,15 @@ class GcCommandController extends AbstractCommandController
         } else {
             $output->writeln("<error>Could not permanently deleted $count Documents</error>");
         }
+
+        return self::SUCCESS;
     }
 
-    /**
-     * @param InputInterface $input
-     * @return bool|int|string|string[]|null
-     */
-    protected function getMinAge(InputInterface $input)
+    private function getMinAge(InputInterface $input): int
     {
         $minAge = $input->getOption('min-age');
         if (MathUtility::canBeInterpretedAsInteger($minAge)) {
-            return (int)$minAge * 60 * 60 * 24;
+            return intval($minAge) * 60 * 60 * 24;
         } else {
             return 0;
         }

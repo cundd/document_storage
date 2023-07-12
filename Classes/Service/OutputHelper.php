@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Service;
@@ -10,6 +11,7 @@ use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use UnexpectedValueException;
+
 use function array_push;
 use function is_array;
 use function is_callable;
@@ -59,34 +61,25 @@ class OutputHelper implements OutputHelperInterface
         }
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param array|null      $data
-     */
-    private function writeJsonData(OutputInterface $output, $data): void
+    private function writeJsonData(OutputInterface $output, mixed $data): void
     {
         $output->writeln($this->formatJsonData($data));
         $output->writeln('');
     }
 
     /**
-     * Returns a formatted json-encoded version of the given data
+     * Return a formatted json-encoded version of the given data
      *
      * @param mixed $data The data to format
      * @param bool  $withColors
      * @return string
      */
-    private function formatJsonData($data, bool $withColors = true)
+    private function formatJsonData(mixed $data, bool $withColors = true): string
     {
         return (new JsonFormatter())->formatJsonData($data, $withColors);
     }
 
-    /**
-     * @param Document $document
-     * @param string   $keyPath
-     * @return mixed|null
-     */
-    private function resolveKeyPath(Document $document, string $keyPath)
+    private function resolveKeyPath(Document $document, string $keyPath): ?array
     {
         $asteriskCount = substr_count($keyPath, '*');
         if ($asteriskCount === 0) {
@@ -94,7 +87,7 @@ class OutputHelper implements OutputHelperInterface
         }
 
         if ($asteriskCount === 1) {
-            list($lead, $tail) = explode('*', $keyPath, 2);
+            [$lead, $tail] = explode('*', $keyPath, 2);
             $leadKeyPath = rtrim($lead, '.');
             $leadResult = $document->valueForKeyPath($leadKeyPath, NotFoundException::instance());
 
@@ -139,9 +132,9 @@ class OutputHelper implements OutputHelperInterface
      * @param mixed  $input
      * @param string $keyPath
      * @param null   $default
-     * @return array
+     * @return mixed
      */
-    private function valueForKeyPath($input, string $keyPath, $default = null)
+    private function valueForKeyPath(mixed $input, string $keyPath, $default = null): mixed
     {
         return array_reduce(
             explode('.', $keyPath),
@@ -167,12 +160,7 @@ class OutputHelper implements OutputHelperInterface
         );
     }
 
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     * @param                 $data
-     */
-    protected function writeOutput(InputInterface $input, OutputInterface $output, $data): void
+    protected function writeOutput(InputInterface $input, OutputInterface $output, mixed $data): void
     {
         $format = $input->hasArgument('format') ? $input->getArgument('format') : 'json';
         switch ($format) {

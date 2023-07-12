@@ -1,8 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Model;
-
 
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 
@@ -14,16 +14,16 @@ interface DocumentInterface
     /**
      * Return the Documents global unique identifier
      *
-     * @return string
+     * @return string|null
      */
     public function getGuid(): ?string;
 
     /**
      * Set the Document's ID
      *
-     * @param string|int $id
+     * @param int|string $id
      */
-    public function setId($id);
+    public function setId(int|string $id): void;
 
     /**
      * Return the Document's ID
@@ -53,7 +53,7 @@ interface DocumentInterface
     /**
      * Return the Document's database
      *
-     * @return string
+     * @return string|null
      */
     public function getDb(): ?string;
 
@@ -63,16 +63,16 @@ interface DocumentInterface
      * @param string $key
      * @return mixed
      */
-    public function valueForKey(string $key);
+    public function valueForKey(string $key): mixed;
 
     /**
      * Return the value for the given key path (i.e. "foo.bar")
      *
-     * @param string $keyPath
-     * @param mixed  $default
+     * @param string     $keyPath
+     * @param mixed|null $default
      * @return mixed
      */
-    public function valueForKeyPath(string $keyPath, $default = null);
+    public function valueForKeyPath(string $keyPath, mixed $default = null): mixed;
 
     /**
      * Invoked if a retrieved key is not defined

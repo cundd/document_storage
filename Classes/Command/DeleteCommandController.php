@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Command;
@@ -9,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DeleteCommandController extends AbstractCommandController
 {
-    protected function configure()
+    protected function configure(): void
     {
         $help = 'Remove a Document from the database.';
         $this->setDescription('Remove a Document from the database')
@@ -18,7 +19,7 @@ class DeleteCommandController extends AbstractCommandController
             ->addArgument('id', InputArgument::REQUIRED, 'Document ID');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $db = $input->getArgument('database');
         $id = $input->getArgument('id');
@@ -30,9 +31,9 @@ class DeleteCommandController extends AbstractCommandController
             $this->persistChanges();
             $output->writeln("<info>Removed $db/$id</info>");
 
-            return 0;
+            return self::SUCCESS;
         } else {
-            return 1;
+            return self::FAILURE;
         }
     }
 }

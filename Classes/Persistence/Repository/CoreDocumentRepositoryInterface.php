@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Persistence\Repository;
@@ -23,7 +24,7 @@ interface CoreDocumentRepositoryInterface extends DocumentRepositoryInterface
      * @param string $database
      * @return DocumentInterface[]|QueryResultInterface
      */
-    public function findByDatabase(string $database);
+    public function findByDatabase(string $database): array|QueryResultInterface;
 
     /**
      * Remove all Documents from the given database

@@ -1,11 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage;
 
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
-use function strpos;
 
 /**
  * Class to filter a collection of Documents according to given constraints
@@ -53,7 +53,7 @@ class DocumentFilter
         bool $strict
     ): bool {
         foreach ($constraints as $key => $constraint) {
-            if (strpos($key, '.') === false) {
+            if (!str_contains($key, '.')) {
                 $documentValue = $currentDocument->valueForKey($key);
             } else {
                 $documentValue = $currentDocument->valueForKeyPath($key);

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Repository;
@@ -16,7 +17,7 @@ interface DocumentRepositoryInterface extends RepositoryInterface
      * Return the Document with the given GUID
      *
      * @param string $guid
-     * @return DocumentInterface
+     * @return DocumentInterface|null
      */
     public function findByGuid(string $guid): ?DocumentInterface;
 
@@ -25,7 +26,7 @@ interface DocumentRepositoryInterface extends RepositoryInterface
      *
      * @param string $database
      * @param string $id
-     * @return DocumentInterface
+     * @return DocumentInterface|null
      */
     public function findOneByDatabaseAndId(string $database, string $id): ?DocumentInterface;
 
@@ -34,7 +35,7 @@ interface DocumentRepositoryInterface extends RepositoryInterface
      *
      * @return DocumentInterface[]|QueryResultInterface
      */
-    public function findAllIgnoreDatabase();
+    public function findAllIgnoreDatabase(): QueryResultInterface|array;
 
     /**
      * Search for Documents matching the given properties

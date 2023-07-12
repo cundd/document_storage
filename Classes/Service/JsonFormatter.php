@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Service;
@@ -15,17 +16,15 @@ class JsonFormatter
      * Return a formatted json-encoded version of the given data
      *
      * @param mixed $data The data to format
-     * @param bool  $withColors
+     * @param bool $withColors
      * @return string
      */
-    public function formatJsonData($data, bool $withColors = true)
+    public function formatJsonData(mixed $data, bool $withColors = true): string
     {
         $output = json_encode($data, JSON_PRETTY_PRINT);
         $notFoundSymbolString = '"' . NotFoundException::getSymbol() . '"';
         if (!$withColors) {
-            $output = str_replace($notFoundSymbolString, '< not found >', $output);
-
-            return $output;
+            return str_replace($notFoundSymbolString, '< not found >', $output);
         }
 
         $output = preg_replace('!"([^"]+)":!', '<fg=yellow>"$1"</>:', $output);

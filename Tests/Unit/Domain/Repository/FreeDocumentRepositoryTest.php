@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Repository;
@@ -7,6 +8,7 @@ use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryInterface;
 use Cundd\DocumentStorage\Domain\Repository\FreeDocumentRepository;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
 use Prophecy\Prophecy\ObjectProphecy;
+
 use function count;
 
 class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
@@ -14,7 +16,7 @@ class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
     protected function buildRepositoryWithCore(
         CoreDocumentRepositoryInterface $coreDocumentRepository
     ): DocumentRepositoryInterface {
-        return new FreeDocumentRepository(null, $coreDocumentRepository);
+        return new FreeDocumentRepository($coreDocumentRepository);
     }
 
     protected function getTestDatabaseName(): string
@@ -90,7 +92,7 @@ class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
     }
 
     /**
-     * @param callable $configureCoreRepositoryProphecy
+     * @param callable|null $configureCoreRepositoryProphecy
      * @return FreeDocumentRepository
      */
     protected function buildRepository(?callable $configureCoreRepositoryProphecy = null): DocumentRepositoryInterface

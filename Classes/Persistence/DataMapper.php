@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Persistence;
@@ -38,9 +39,12 @@ class DataMapper
     /**
      * Map a single row on an object of the given class
      *
-     * @param string $className The name of the target class
-     * @param array  $row       A single array with field_name => value pairs
+     * @template T
+     * @param string                $className The name of the target class
+     * @param array                 $row       A single array with field_name => value pairs
+     * @psalm-param class-string<T> $className
      * @return DocumentInterface|null An object of the given class
+     * @psalm-return T
      */
     public function mapSingleRow(string $className, array $row): ?DocumentInterface
     {

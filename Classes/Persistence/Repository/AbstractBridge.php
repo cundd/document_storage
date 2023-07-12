@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Persistence\Repository;
@@ -7,10 +8,8 @@ use BadFunctionCallException;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\QuerySettingsInterface;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
  * The Bridge builds the connection between the various Document repository implementations and the concrete Core
@@ -18,33 +17,23 @@ use TYPO3\CMS\Extbase\Persistence\Generic\QuerySettingsInterface;
  */
 abstract class AbstractBridge implements DocumentRepositoryInterface
 {
-    /**
-     * @var CoreDocumentRepository
-     */
-    protected $baseRepository;
+    protected CoreDocumentRepositoryInterface $baseRepository;
 
     /**
      * Construct a new Document Repository
      *
-     * @param ObjectManagerInterface               $objectManager
-     * @param CoreDocumentRepositoryInterface|null $baseRepository
-     * @param string                               $objectType
+     * @param CoreDocumentRepositoryInterface $baseRepository
+     * @param string                          $objectType
      */
     public function __construct(
-        ?ObjectManagerInterface $objectManager = null,
-        ?CoreDocumentRepositoryInterface $baseRepository = null,
+        CoreDocumentRepositoryInterface $baseRepository,
         string $objectType = Document::class
     ) {
-        if ($baseRepository) {
-            $this->baseRepository = $baseRepository;
-        } else {
-            $objectManager = $objectManager ?? GeneralUtility::makeInstance(ObjectManager::class);
-            $this->baseRepository = CoreDocumentRepository::build($objectManager, $objectType);
-        }
+        $this->baseRepository = $baseRepository;
     }
 
     /**
-     * @param DocumentInterface|object $object
+     * @param DocumentInterface $object
      * @return DocumentInterface
      */
     abstract protected function checkDocumentDatabase(DocumentInterface $object): DocumentInterface;
@@ -101,7 +90,7 @@ abstract class AbstractBridge implements DocumentRepositoryInterface
         return $this->baseRepository->findOneByDatabaseAndId($database, $id);
     }
 
-    public function findAllIgnoreDatabase()
+    public function findAllIgnoreDatabase(): QueryResultInterface|array
     {
         return $this->baseRepository->findAllIgnoreDatabase();
     }

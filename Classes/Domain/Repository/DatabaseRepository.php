@@ -1,14 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Repository;
-
 
 use Cundd\DocumentStorage\Domain\Model\Database;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use DateTimeImmutable;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Generic\Exception;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
 
@@ -17,21 +17,8 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
  */
 class DatabaseRepository
 {
-    private $objectManager;
-    private $connectionPool;
-
-    /**
-     * DatabaseRepository constructor.
-     *
-     * @param ObjectManagerInterface $objectManager
-     * @param ConnectionPool         $connectionPool
-     */
-    public function __construct(
-        ObjectManagerInterface $objectManager,
-        ConnectionPool $connectionPool
-    ) {
-        $this->connectionPool = $connectionPool;
-        $this->objectManager = $objectManager;
+    public function __construct(readonly private ConnectionPool $connectionPool)
+    {
     }
 
     /**
@@ -62,15 +49,12 @@ class DatabaseRepository
         return $databases;
     }
 
-    /**
-     * @return string
-     */
     private function getTable(): string
     {
         static $table = null;
         if (null === $table) {
             try {
-                $table = $this->objectManager->get(DataMapper::class)->getDataMap(Document::class)->getTableName();
+                $table = GeneralUtility::makeInstance(DataMapper::class)->getDataMap(Document::class)->getTableName();
             } catch (Exception $e) {
             }
         }
