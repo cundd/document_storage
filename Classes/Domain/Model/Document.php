@@ -6,13 +6,11 @@ namespace Cundd\DocumentStorage\Domain\Model;
 
 use Cundd\DocumentStorage\Constants;
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
-use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Cundd\DocumentStorage\Exception\InvalidIdException;
+use Cundd\DocumentStorage\Persistence\JsonSerializer;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 use function is_null;
-use function is_scalar;
-use function is_string;
 
 class Document extends AbstractEntity implements DocumentInterface
 {
@@ -75,14 +73,7 @@ class Document extends AbstractEntity implements DocumentInterface
 
     final public function getId(): ?string
     {
-        $id = $this->id;
-        if (is_null($id) || is_string($id)) {
-            return $id;
-        }
-        if (is_scalar($id)) {
-            return (string)$id;
-        }
-        throw new InvalidIdException('ID is not valid');
+        return $this->id;
     }
 
     final public function isDeleted(): bool
@@ -200,16 +191,8 @@ class Document extends AbstractEntity implements DocumentInterface
     final public function getUnpackedData()
     {
         if (!$this->_dataUnpacked) {
-            if ($this->dataProtected && strtolower($this->dataProtected) !== 'null') {
-                $this->_dataUnpacked = json_decode($this->dataProtected, true);
-
-                if ($this->_dataUnpacked === null) {
-                    throw new InvalidDocumentException(
-                        'Invalid JSON data: ' . json_last_error_msg(),
-                        json_last_error()
-                    );
-                }
-            }
+            $jsonSerializer = new JsonSerializer();
+            $this->_dataUnpacked = $jsonSerializer->deserialize($this->dataProtected);
         }
 
         return $this->_dataUnpacked;
@@ -226,14 +209,11 @@ class Document extends AbstractEntity implements DocumentInterface
     }
 
     /**
-     * Packs the Document content
-     *
-     * @return DocumentInterface
+     * Pack the Document content
      */
-    private function _packContent()
+    private function _packContent(): void
     {
-        $this->dataProtected = json_encode($this->_dataUnpacked);
-
-        return $this;
+        $jsonSerializer = new JsonSerializer();
+        $this->dataProtected = $jsonSerializer->serialize($this->_dataUnpacked);
     }
 }
