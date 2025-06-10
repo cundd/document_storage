@@ -14,6 +14,9 @@ services:
   Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory:
     public: true
 
+  Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository:
+    autowire: false
+
   Cundd\DocumentStorage\Rest\DocumentDataProvider:
     autowire: false
 
