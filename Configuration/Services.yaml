@@ -6,7 +6,7 @@ services:
     public: false
 
   Cundd\DocumentStorage\:
-    resource: '../Classes/*'
+    resource: "../Classes/*"
 
   Cundd\DocumentStorage\Rest\DocumentHandler:
     public: true
@@ -19,37 +19,36 @@ services:
 
   Cundd\DocumentStorage\Command\GeneralCommandController:
     tags:
-      - name: 'console.command'
-        command: 'document-storage'
-        description: 'Create a new Document'
+      - name: "console.command"
+        command: "document-storage"
+        description: "Create a new Document"
 
   Cundd\DocumentStorage\Command\ListCommandController:
     tags:
-      - name: 'console.command'
-        command: 'document-storage:list'
-        description: 'List all databases'
+      - name: "console.command"
+        command: "document-storage:list"
+        description: "List all databases"
 
   Cundd\DocumentStorage\Command\CreateCommandController:
     tags:
-      - name: 'console.command'
-        command: 'document-storage:create'
-        description: 'Create a new Document'
+      - name: "console.command"
+        command: "document-storage:create"
+        description: "Create a new Document"
 
   Cundd\DocumentStorage\Command\ReadCommandController:
     tags:
-      - name: 'console.command'
-        command: 'document-storage:read'
-        description: 'Read Documents from the database'
+      - name: "console.command"
+        command: "document-storage:read"
+        description: "Read Documents from the database"
 
   Cundd\DocumentStorage\Command\DeleteCommandController:
     tags:
-      - name: 'console.command'
-        command: 'document-storage:delete'
-        description: 'Remove a Document from the database'
+      - name: "console.command"
+        command: "document-storage:delete"
+        description: "Remove a Document from the database"
 
   Cundd\DocumentStorage\Command\GcCommandController:
     tags:
-      - name: 'console.command'
-        command: 'document-storage:gc'
-        description: 'Permanently remove deleted Documents'
-
+      - name: "console.command"
+        command: "document-storage:gc"
+        description: "Permanently remove deleted Documents"
