@@ -9,9 +9,11 @@ use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function file_get_contents;
 use function json_decode;
 use function json_last_error_msg;
+
 use const STDIN;
 
 class CreateCommandController extends AbstractCommandController
@@ -56,8 +58,6 @@ class CreateCommandController extends AbstractCommandController
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
      * @return bool|mixed|string
      */
     protected function getData(InputInterface $input, OutputInterface $output): mixed
@@ -78,7 +78,7 @@ class CreateCommandController extends AbstractCommandController
         }
 
         $decoded = json_decode($dataRaw, true);
-        if ($decoded === null && strtolower($dataRaw) !== 'null') {
+        if (null === $decoded && 'null' !== strtolower($dataRaw)) {
             throw new InvalidDocumentException('Invalid JSON data: ' . json_last_error_msg(), json_last_error());
         }
 
@@ -90,7 +90,7 @@ class CreateCommandController extends AbstractCommandController
         if (function_exists('readline')) {
             return readline();
         } else {
-            return (string)stream_get_line(STDIN, 1024, PHP_EOL);
+            return (string) stream_get_line(STDIN, 1024, PHP_EOL);
         }
     }
 
@@ -98,6 +98,6 @@ class CreateCommandController extends AbstractCommandController
     {
         stream_set_blocking(STDIN, false);
 
-        return (string)file_get_contents('php://stdin');
+        return (string) file_get_contents('php://stdin');
     }
 }

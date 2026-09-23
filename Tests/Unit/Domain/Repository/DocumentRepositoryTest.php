@@ -21,7 +21,7 @@ class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
     protected function setUp(): void
     {
         parent::setUp();
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $this->testDatabaseName = bin2hex(random_bytes(12));
     }
 
@@ -32,7 +32,7 @@ class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
     }
 
     protected function buildRepositoryWithCore(
-        CoreDocumentRepositoryInterface $coreDocumentRepository
+        CoreDocumentRepositoryInterface $coreDocumentRepository,
     ): DocumentRepositoryInterface {
         return new DocumentRepository($this->getTestDatabaseName(), $coreDocumentRepository);
     }

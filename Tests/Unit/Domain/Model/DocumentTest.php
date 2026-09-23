@@ -14,7 +14,7 @@ class DocumentTest extends AbstractDocumentCase
     /**
      * @var Document|null
      */
-    protected $fixture = null;
+    protected $fixture;
 
     protected function buildDocument(): Document
     {

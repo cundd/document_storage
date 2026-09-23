@@ -45,7 +45,7 @@ class ReadCommandController extends AbstractCommandController
         }
         if (!$id) {
             $documents = $this->getDocumentRepository()->findByDatabase($db);
-            if (count($documents) === 0) {
+            if (0 === count($documents)) {
                 $output->writeln(sprintf('Database "%s" not found', $db));
 
                 return self::FAILURE;

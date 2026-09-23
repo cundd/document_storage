@@ -23,7 +23,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
     use ProphecyTrait;
 
     abstract protected function buildRepositoryWithCore(
-        CoreDocumentRepositoryInterface $coreDocumentRepository
+        CoreDocumentRepositoryInterface $coreDocumentRepository,
     ): DocumentRepositoryInterface;
 
     abstract protected function getTestDatabaseName(): string;
@@ -43,7 +43,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
 
         $result = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($properties, $documents) {
-                /** @var CoreDocumentRepositoryInterface $prophecy */
+                /* @var CoreDocumentRepositoryInterface $prophecy */
                 $prophecy->findWithProperties($properties, PHP_INT_MAX)->willReturn(
                     $documents
                 )->shouldBeCalled();
@@ -57,8 +57,8 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         $database = $this->getTestDatabaseName();
         $documentRepository = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($database) {
-                /** @var CoreDocumentRepositoryInterface $prophecy */
-                /** @noinspection PhpVoidFunctionResultUsedInspection */
+                /* @var CoreDocumentRepositoryInterface $prophecy */
+                /* @noinspection PhpVoidFunctionResultUsedInspection */
                 $prophecy->removeAllFromDatabase($database)->shouldBeCalled();
             }
         );
@@ -78,7 +78,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         ];
         $documentRepository = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($database, $documents) {
-                /** @var CoreDocumentRepositoryInterface $prophecy */
+                /* @var CoreDocumentRepositoryInterface $prophecy */
                 $prophecy->findByDatabase($database)->willReturn($documents)->shouldBeCalled();
             }
         );
@@ -96,7 +96,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         $database = $this->getTestDatabaseName();
         $documentRepository = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($expectedCount, $database) {
-                /** @var CoreDocumentRepositoryInterface $prophecy */
+                /* @var CoreDocumentRepositoryInterface $prophecy */
                 $prophecy->countByDatabase($database)->willReturn(
                     $expectedCount
                 )->shouldBeCalled();
@@ -110,10 +110,6 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         $this->assertSame($expectedCount, $result);
     }
 
-    /**
-     * @param callable|null $configureCoreRepositoryProphecy
-     * @return DocumentRepositoryInterface
-     */
     protected function buildRepository(?callable $configureCoreRepositoryProphecy = null): DocumentRepositoryInterface
     {
         $coreRepositoryProphecy = $this->prophesize(CoreDocumentRepositoryInterface::class);
@@ -127,7 +123,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         return $this->buildRepositoryWithCore($coreRepository);
     }
 
-    public static function buildDocument(array $data = null): DocumentInterface
+    public static function buildDocument(?array $data = null): DocumentInterface
     {
         if (null === $data) {
             $data = ['name' => 'Daniel', 'job' => 'Webdeveloper', 'dayOfBirth' => new DateTime()];

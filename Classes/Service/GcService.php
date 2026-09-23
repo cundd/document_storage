@@ -16,7 +16,7 @@ class GcService
 {
     private const TABLE_NAME = 'tx_documentstorage_domain_model_document';
 
-    public function __construct(readonly private ConnectionPool $connectionPool)
+    public function __construct(private readonly ConnectionPool $connectionPool)
     {
     }
 
@@ -25,6 +25,7 @@ class GcService
      *
      * @param int         $minAge Minimum age in seconds of Documents to delete
      * @param string|null $db     Name of the database to delete Documents from
+     *
      * @return bool Return TRUE on success otherwise FALSE
      */
     public function removeDeletedDocuments(int $minAge, ?string $db = null): bool
@@ -42,7 +43,6 @@ class GcService
      *
      * @param int         $minAge Minimum age in seconds of Documents to delete
      * @param string|null $db     Name of the database to delete Documents from
-     * @return int
      */
     public function countDeletedDocuments(int $minAge, ?string $db = null): int
     {
@@ -53,7 +53,7 @@ class GcService
         $stmt = $connection->prepare($sql);
         $result = $stmt->executeQuery($whereExpression->getParameters());
 
-        return (int)$result->fetchFirstColumn();
+        return (int) $result->fetchFirstColumn();
     }
 
     private function getConnection(): Connection

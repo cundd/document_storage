@@ -19,8 +19,6 @@ abstract class FixedDatabaseBridge extends AbstractBridge
 {
     /**
      * Name of the database managed by this repository
-     *
-     * @var string
      */
     private string $database = '';
 
@@ -28,13 +26,11 @@ abstract class FixedDatabaseBridge extends AbstractBridge
      * Constructs a new Repository
      *
      * @param string $database Identifier of the managed database
-     * @param CoreDocumentRepositoryInterface $baseRepository
-     * @param string $objectType
      */
     public function __construct(
         string $database,
         CoreDocumentRepositoryInterface $baseRepository,
-        string $objectType = Document::class
+        string $objectType = Document::class,
     ) {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
         parent::__construct($baseRepository, $objectType);
@@ -43,7 +39,9 @@ abstract class FixedDatabaseBridge extends AbstractBridge
 
     /**
      * @param string $uid The identifier of the object to find
+     *
      * @return DocumentInterface|null The matching object if found, otherwise NULL
+     *
      * @see findByIdentifier()
      */
     public function findByUid($uid)
@@ -55,11 +53,12 @@ abstract class FixedDatabaseBridge extends AbstractBridge
      * Find an object matching the given ID
      *
      * @param string $identifier The identifier of the object to find
+     *
      * @return DocumentInterface|null The matching object if found, otherwise NULL
      */
     public function findByIdentifier($identifier)
     {
-        return $this->findById((string)$identifier);
+        return $this->findById((string) $identifier);
     }
 
     public function findAll()
@@ -80,8 +79,8 @@ abstract class FixedDatabaseBridge extends AbstractBridge
     /**
      * Return the Document with the given ID
      *
-     * @param string $id
      * @return DocumentInterface
+     *
      * @see findById()
      */
     public function findOneById(string $id)
@@ -92,7 +91,6 @@ abstract class FixedDatabaseBridge extends AbstractBridge
     /**
      * Return the Document with the given ID
      *
-     * @param string $id
      * @return DocumentInterface
      */
     public function findById(string $id)
@@ -113,8 +111,6 @@ abstract class FixedDatabaseBridge extends AbstractBridge
 
     /**
      * Return the name of the database managed by this repository
-     *
-     * @return string
      */
     protected function getDatabase(): string
     {
@@ -123,7 +119,6 @@ abstract class FixedDatabaseBridge extends AbstractBridge
 
     /**
      * @param DocumentInterface|object $object
-     * @return DocumentInterface
      */
     protected function checkDocumentDatabase(DocumentInterface $object): DocumentInterface
     {

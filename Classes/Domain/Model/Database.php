@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Model;
 
+use DateTimeImmutable;
+
 /**
  * Class Database
  *
@@ -17,36 +19,27 @@ class Database
     private $name;
 
     /**
-     * @var \DateTimeImmutable
+     * @var DateTimeImmutable
      */
     private $creationTime;
 
     /**
      * Database constructor
-     *
-     * @param string             $name
-     * @param \DateTimeImmutable $creationTime
      */
     public function __construct(
         string $name,
-        ?\DateTimeImmutable $creationTime
+        ?DateTimeImmutable $creationTime,
     ) {
         $this->name = $name;
         $this->creationTime = $creationTime;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return \DateTimeImmutable|null
-     */
-    public function getCreationTime(): ?\DateTimeImmutable
+    public function getCreationTime(): ?DateTimeImmutable
     {
         return $this->creationTime;
     }

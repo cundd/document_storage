@@ -21,26 +21,18 @@ abstract class AbstractBridge implements DocumentRepositoryInterface
 
     /**
      * Construct a new Document Repository
-     *
-     * @param CoreDocumentRepositoryInterface $baseRepository
-     * @param string                          $objectType
      */
     public function __construct(
         CoreDocumentRepositoryInterface $baseRepository,
-        string $objectType = Document::class
+        string $objectType = Document::class,
     ) {
         $this->baseRepository = $baseRepository;
     }
 
-    /**
-     * @param DocumentInterface $object
-     * @return DocumentInterface
-     */
     abstract protected function checkDocumentDatabase(DocumentInterface $object): DocumentInterface;
 
     /**
      * @param DocumentInterface $object
-     * @inheritDoc
      */
     public function add($object)
     {
@@ -49,7 +41,6 @@ abstract class AbstractBridge implements DocumentRepositoryInterface
 
     /**
      * @param DocumentInterface $object
-     * @inheritDoc
      */
     public function remove($object)
     {
@@ -58,7 +49,6 @@ abstract class AbstractBridge implements DocumentRepositoryInterface
 
     /**
      * @param DocumentInterface $modifiedObject
-     * @inheritDoc
      */
     public function update($modifiedObject)
     {

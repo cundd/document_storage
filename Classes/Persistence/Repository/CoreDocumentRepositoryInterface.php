@@ -12,24 +12,18 @@ interface CoreDocumentRepositoryInterface extends DocumentRepositoryInterface
 {
     /**
      * Return all objects of the given Document database
-     *
-     * @param string $database
-     * @return int
      */
     public function countByDatabase(string $database): int;
 
     /**
      * Return all objects of the given Document database
      *
-     * @param string $database
      * @return DocumentInterface[]|QueryResultInterface
      */
     public function findByDatabase(string $database): array|QueryResultInterface;
 
     /**
      * Remove all Documents from the given database
-     *
-     * @param string $database
      */
     public function removeAllFromDatabase(string $database): void;
 }

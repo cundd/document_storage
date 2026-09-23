@@ -17,7 +17,7 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
  */
 class DatabaseRepository
 {
-    public function __construct(readonly private ConnectionPool $connectionPool)
+    public function __construct(private readonly ConnectionPool $connectionPool)
     {
     }
 

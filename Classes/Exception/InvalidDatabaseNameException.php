@@ -24,7 +24,8 @@ class InvalidDatabaseNameException extends DomainException
         }
         if (!ctype_alnum($cleanName)) {
             throw new InvalidDatabaseNameException(
-                'Database name must contain only alphanumeric characters, "-" and "_"', 1389258923
+                'Database name must contain only alphanumeric characters, "-" and "_"',
+                1389258923
             );
         }
         if (strtolower($database) !== $database) {

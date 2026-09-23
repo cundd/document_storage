@@ -16,6 +16,7 @@ use Cundd\Rest\ObjectManagerInterface;
 use Cundd\Rest\ResponseFactoryInterface;
 use Cundd\Rest\Router\Route;
 use Cundd\Rest\Router\RouterInterface;
+use Exception;
 
 class DocumentHandler implements HandlerInterface
 {
@@ -26,12 +27,12 @@ class DocumentHandler implements HandlerInterface
     /**
      * Object Manager
      *
-     * @var \Cundd\Rest\ObjectManagerInterface
+     * @var ObjectManagerInterface
      */
     protected $objectManager;
 
     /**
-     * @var \Cundd\Rest\ResponseFactoryInterface
+     * @var ResponseFactoryInterface
      */
     protected $responseFactory;
 
@@ -42,15 +43,11 @@ class DocumentHandler implements HandlerInterface
 
     /**
      * Handler constructor
-     *
-     * @param ObjectManagerInterface   $objectManager
-     * @param ResponseFactoryInterface $responseFactory
-     * @param LoggerInterface          $logger
      */
     public function __construct(
         ObjectManagerInterface $objectManager,
         ResponseFactoryInterface $responseFactory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->objectManager = $objectManager;
         $this->responseFactory = $responseFactory;
@@ -71,7 +68,7 @@ class DocumentHandler implements HandlerInterface
         RestRequestInterface $request,
         string $databaseName,
         string $identifier,
-        string $propertyKey
+        string $propertyKey,
     ) {
         return $this->performGetProperty($this->getDataProvider($databaseName), $request, $identifier, $propertyKey);
     }
@@ -79,7 +76,7 @@ class DocumentHandler implements HandlerInterface
     public function show(
         RestRequestInterface $request,
         string $databaseName,
-        string $identifier
+        string $identifier,
     ) {
         return $this->performShow($this->getDataProvider($databaseName), $request, $identifier);
     }
@@ -87,27 +84,27 @@ class DocumentHandler implements HandlerInterface
     public function createOrUpdate(
         RestRequestInterface $request,
         string $databaseName,
-        string $identifier
+        string $identifier,
     ) {
         $resourceType = $request->getResourceType();
         $dataProvider = $this->getDataProvider($databaseName);
         if ($dataProvider->fetchModel($identifier, $resourceType)) {
             $response = $this->performUpdate($dataProvider, $request, $identifier, $request->getSentData());
 
-            if ($response instanceof \Exception) {
+            if ($response instanceof Exception) {
                 throw $response;
             }
 
             return $response;
         } else {
             $data = $request->getSentData();
-            if (isset($data['id']) && (string)$data['id'] !== $identifier) {
+            if (isset($data['id']) && (string) $data['id'] !== $identifier) {
                 return new InvalidPropertyException('Property "id" is set but does not match the URI\'s identifier');
             }
             $data['id'] = $identifier;
 
             $response = $this->performCreate($dataProvider, $request, $data);
-            if ($response instanceof \Exception) {
+            if ($response instanceof Exception) {
                 throw $response;
             }
 
@@ -146,8 +143,8 @@ class DocumentHandler implements HandlerInterface
     }
 
     public function info(
-        /** @noinspection PhpUnusedParameterInspection */
-        RestRequestInterface $request
+        /* @noinspection PhpUnusedParameterInspection */
+        RestRequestInterface $request,
     ) {
         return 'Document Storage ' . self::VERSION;
     }
@@ -176,9 +173,6 @@ class DocumentHandler implements HandlerInterface
 
     /**
      * Return the Data Provider
-     *
-     * @param string $databaseName
-     * @return DocumentDataProvider
      */
     protected function getDataProvider(string $databaseName): DocumentDataProvider
     {

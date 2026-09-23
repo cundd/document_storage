@@ -18,9 +18,9 @@ use function sprintf;
 class DocumentRepositoryFactory
 {
     public function __construct(
-        readonly private DataMapper $dataMapper,
-        readonly private DocumentFilter $documentFilter,
-        readonly private PersistenceManagerInterface $persistenceManager,
+        private readonly DataMapper $dataMapper,
+        private readonly DocumentFilter $documentFilter,
+        private readonly PersistenceManagerInterface $persistenceManager,
     ) {
     }
 
@@ -36,17 +36,15 @@ class DocumentRepositoryFactory
 
     /**
      * @template R of DocumentRepository
-     * @param string                $database
-     * @param string                $objectType
-     * @param string|null           $repositoryClass
+     *
      * @psalm-param class-string<R> $repositoryClass
-     * @return DocumentRepository
+     *
      * @psalm-return R
      */
     public function buildDocumentRepository(
         string $database,
         string $objectType = Document::class,
-        ?string $repositoryClass = null
+        ?string $repositoryClass = null,
     ): DocumentRepository {
         $baseDocumentRepository = CoreDocumentRepository::build(
             $objectType,
@@ -73,15 +71,14 @@ class DocumentRepositoryFactory
 
     /**
      * @template R of FreeDocumentRepository
-     * @param string                $objectType
-     * @param string|null           $repositoryClass
+     *
      * @psalm-param class-string<R> $repositoryClass
-     * @return FreeDocumentRepository
+     *
      * @psalm-return R
      */
     public function buildFreeDocumentRepository(
         string $objectType = Document::class,
-        ?string $repositoryClass = null
+        ?string $repositoryClass = null,
     ): FreeDocumentRepository {
         $baseDocumentRepository = CoreDocumentRepository::build(
             $objectType,

@@ -16,15 +16,11 @@ class Document extends AbstractEntity implements DocumentInterface
 {
     /**
      * ID
-     *
-     * @var string
      */
     protected string $id = '';
 
     /**
      * Database
-     *
-     * @var string
      */
     protected string $db = '';
 
@@ -32,29 +28,21 @@ class Document extends AbstractEntity implements DocumentInterface
 
     /**
      * Creation time
-     *
-     * @var int
      */
     protected int $creationTime = 0;
 
     /**
      * Modification time
-     *
-     * @var int
      */
     protected int $modificationTime = 0;
 
     /**
      * Document data
-     *
-     * @var string|null
      */
     protected ?string $dataProtected = null;
 
     /**
      * Unpacked Document content
-     *
-     * @var array|null
      */
     protected ?array $_dataUnpacked = null;
 
@@ -62,13 +50,13 @@ class Document extends AbstractEntity implements DocumentInterface
     {
         $guid = $this->db . '/' . $this->id;
 
-        return $guid !== '/' ? $guid : null;
+        return '/' !== $guid ? $guid : null;
     }
 
     final public function setId(int|string $id): void
     {
         InvalidIdException::assertValidId($id);
-        $this->id = (string)$id;
+        $this->id = (string) $id;
     }
 
     final public function getId(): ?string
@@ -78,7 +66,7 @@ class Document extends AbstractEntity implements DocumentInterface
 
     final public function isDeleted(): bool
     {
-        return (bool)$this->deleted;
+        return (bool) $this->deleted;
     }
 
     final public function setDeleted(bool $deleted): void
@@ -88,8 +76,6 @@ class Document extends AbstractEntity implements DocumentInterface
 
     /**
      * Set the Document's data
-     *
-     * @param string $content
      */
     final public function setDataProtected(string $content): void
     {
@@ -99,8 +85,6 @@ class Document extends AbstractEntity implements DocumentInterface
 
     /**
      * Return the Document's data
-     *
-     * @return string|null
      */
     final public function getDataProtected(): ?string
     {
@@ -156,7 +140,7 @@ class Document extends AbstractEntity implements DocumentInterface
 
     public function setValueForKey(string $key, $value): DocumentInterface
     {
-        if ($key === Constants::DATA_PROPERTY_NAME) {
+        if (Constants::DATA_PROPERTY_NAME === $key) {
             $this->dataProtected = $value;
             $this->_dataUnpacked = null;
 
@@ -200,12 +184,12 @@ class Document extends AbstractEntity implements DocumentInterface
 
     public function __get($name)
     {
-        return $this->valueForKey((string)$name);
+        return $this->valueForKey((string) $name);
     }
 
     public function __isset($name)
     {
-        return (bool)$this->valueForKey((string)$name);
+        return (bool) $this->valueForKey((string) $name);
     }
 
     /**

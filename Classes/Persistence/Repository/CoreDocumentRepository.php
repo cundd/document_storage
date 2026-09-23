@@ -28,34 +28,21 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
 {
     /**
      * Defines if query results should be retrieved raw and converted by convertCollection()
-     *
-     * @var bool
      */
     private bool $useCustomDataMapping = false;
 
-    /**
-     * @var DataMapper
-     */
     private DataMapper $dataMapper;
 
-    /**
-     * @var DocumentFilter
-     */
     private DocumentFilter $documentFilter;
 
     /**
      * Concrete Repository implementation which will be used by `DocumentRepository` and `FreeDocumentRepository`
-     *
-     * @param string                      $objectType
-     * @param DataMapper                  $dataMapper
-     * @param DocumentFilter              $documentFilter
-     * @param PersistenceManagerInterface $persistenceManager
      */
     private function __construct(
         string $objectType,
         DataMapper $dataMapper,
         DocumentFilter $documentFilter,
-        PersistenceManagerInterface $persistenceManager
+        PersistenceManagerInterface $persistenceManager,
     ) {
         parent::__construct();
         $this->injectPersistenceManager($persistenceManager);
@@ -67,18 +54,13 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
     /**
      * Factory to build the Base Document Repository
      *
-     * @param string                      $objectType
-     * @param DataMapper                  $dataMapper
-     * @param DocumentFilter              $documentFilter
-     * @param PersistenceManagerInterface $persistenceManager
-     * @return CoreDocumentRepositoryInterface
      * @internal
      */
     public static function build(
         string $objectType,
         DataMapper $dataMapper,
         DocumentFilter $documentFilter,
-        PersistenceManagerInterface $persistenceManager
+        PersistenceManagerInterface $persistenceManager,
     ): CoreDocumentRepositoryInterface {
         return new static($objectType, $dataMapper, $documentFilter, $persistenceManager);
     }
@@ -87,7 +69,9 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      * Add an object to this repository
      *
      * @param DocumentInterface $object The object to add
+     *
      * @return void
+     *
      * @throws NoDatabaseSelectedException if the given object and the repository have no database set
      */
     public function add($object)
@@ -102,7 +86,9 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      * Remove an object from this repository
      *
      * @param DocumentInterface $object The object to remove
+     *
      * @return void
+     *
      * @throws NoDatabaseSelectedException if the given object and the repository have no database set
      */
     public function remove($object)
@@ -120,7 +106,9 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      * Replace an existing object with the same identifier by the given object
      *
      * @param DocumentInterface $modifiedObject The modified object
+     *
      * @return void
+     *
      * @throws NoDatabaseSelectedException if the given object and the repository have no database set
      */
     public function update($modifiedObject)
@@ -134,10 +122,9 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
     /**
      * Return all objects of the selected Document database
      *
-     * @param string|null $database
      * @return DocumentInterface[]|QueryResultInterface
      */
-    public function findAll(string $database = null)
+    public function findAll(?string $database = null)
     {
         return $this->findByDatabase($this->prepareDatabaseArgument($database));
     }
@@ -173,15 +160,16 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      * If `addDataConstraint` is TRUE the SQL `dataProtected LIKE '%propertyValue%'` will be added.
      * To use the documentFilter only for filtering set it to FALSE
      *
-     * @param array   $properties        Dictionary of property keys and values
-     * @param integer $limit             Limit the number of matches
-     * @param bool    $addDataConstraint If TRUE the SQL `dataProtected LIKE '%propertyValue%'` will be added
+     * @param array $properties        Dictionary of property keys and values
+     * @param int   $limit             Limit the number of matches
+     * @param bool  $addDataConstraint If TRUE the SQL `dataProtected LIKE '%propertyValue%'` will be added
+     *
      * @return DocumentInterface[]
      */
     public function findWithProperties(
         array $properties,
         int $limit = PHP_INT_MAX,
-        bool $addDataConstraint = true
+        bool $addDataConstraint = true,
     ): iterable {
         $query = $this->createQuery();
 
@@ -222,7 +210,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      *
      * Like findAll() but will return the raw database tables
      *
-     * @param string $database
      * @return array[]
      */
     public function findAllRaw(string $database)
@@ -236,7 +223,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
     /**
      * Return all objects of the given Document database
      *
-     * @param string $database
      * @return DocumentInterface[]|QueryResultInterface
      */
     public function findByDatabase(string $database): array|QueryResultInterface
@@ -249,9 +235,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
 
     /**
      * Return all objects of the given Document database
-     *
-     * @param string $database
-     * @return int
      */
     public function countByDatabase(string $database): int
     {
@@ -263,10 +246,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
 
     /**
      * Return the Document with the given ID in the given database
-     *
-     * @param string $database
-     * @param string $id
-     * @return DocumentInterface
      */
     public function findOneByDatabaseAndId(string $database, string $id): ?DocumentInterface
     {
@@ -284,8 +263,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
 
     /**
      * Remove all Documents from the given database
-     *
-     * @param string $database
      */
     public function removeAllFromDatabase(string $database): void
     {
@@ -296,14 +273,9 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
         }
     }
 
-    /**
-     * @param Query               $query
-     * @param ConstraintInterface $constraint
-     * @return DocumentInterface|null
-     */
     private function findOneByConstraint(
         Query $query,
-        ConstraintInterface $constraint
+        ConstraintInterface $constraint,
     ): ?DocumentInterface {
         $query->matching(
             $constraint
@@ -345,13 +317,14 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      *
      * @param string $methodName The name of the magic method
      * @param string $arguments  The arguments of the magic method
-     * @return mixed
+     *
      * @throws UnsupportedMethodException
      */
     public function __call($methodName, $arguments)
     {
         throw new UnsupportedMethodException(
-            'The method "' . $methodName . '" is not supported by the repository.', 1233180480
+            'The method "' . $methodName . '" is not supported by the repository.',
+            1233180480
         );
     }
 
@@ -359,6 +332,7 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
      * Convert the query results into Documents
      *
      * @param array[] $collection
+     *
      * @return DocumentInterface[]
      */
     private function convertCollection(array $collection): array
@@ -369,7 +343,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
     /**
      * Convert the query result into Documents
      *
-     * @param QueryInterface $query
      * @return DocumentInterface[]|QueryResultInterface
      */
     private function convertQueryResult(QueryInterface $query)
@@ -402,10 +375,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
         // noop
     }
 
-    /**
-     * @param DocumentInterface $object
-     * @return DocumentInterface
-     */
     private function checkDocumentDatabase(DocumentInterface $object): DocumentInterface
     {
         if (!$object->getDb()) {
@@ -428,10 +397,6 @@ class CoreDocumentRepository extends Repository implements CoreDocumentRepositor
         return $database;
     }
 
-    /**
-     * @param string $guid
-     * @return array
-     */
     private function splitGuid(string $guid): array
     {
         [$database, $id] = explode('/', $guid, 2);

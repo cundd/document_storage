@@ -23,17 +23,16 @@ class JsonSerializer
     }
 
     /**
-     * @param string|null $data
      * @return mixed|null
      */
     public function deserialize(?string $data)
     {
-        if (!$data || strtolower($data) === 'null') {
+        if (!$data || 'null' === strtolower($data)) {
             return null;
         }
 
         $deserialized = json_decode($data, true);
-        if ($deserialized === null) {
+        if (null === $deserialized) {
             throw new InvalidDocumentException(
                 'Invalid JSON data: ' . json_last_error_msg(),
                 json_last_error()

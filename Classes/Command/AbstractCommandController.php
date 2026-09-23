@@ -18,15 +18,15 @@ abstract class AbstractCommandController extends Command
 {
     use DocumentOutputTrait;
 
-    private FreeDocumentRepository|null $documentRepository;
+    private ?FreeDocumentRepository $documentRepository;
 
     public function __construct(
-        readonly private DocumentRepositoryFactory $documentRepositoryFactory,
-        readonly protected DataMapper $dataMapper,
-        readonly private DocumentFilter $documentFilter,
-        readonly private PersistenceManagerInterface $persistenceManager,
-        readonly protected DatabaseRepository $databaseRepository,
-        $name = null
+        private readonly DocumentRepositoryFactory $documentRepositoryFactory,
+        protected readonly DataMapper $dataMapper,
+        private readonly DocumentFilter $documentFilter,
+        private readonly PersistenceManagerInterface $persistenceManager,
+        protected readonly DatabaseRepository $databaseRepository,
+        $name = null,
     ) {
         parent::__construct($name);
     }

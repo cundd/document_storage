@@ -12,6 +12,7 @@ use Cundd\DocumentStorage\Persistence\Repository\AbstractBridge;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
 use InvalidArgumentException;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
+
 use function is_string;
 
 /**
@@ -25,20 +26,19 @@ class FreeDocumentRepository extends AbstractBridge
 {
     /**
      * Construct a new Document Repository
-     *
-     * @param CoreDocumentRepositoryInterface $baseRepository
-     * @param string                          $objectType
      */
     public function __construct(
         CoreDocumentRepositoryInterface $baseRepository,
-        string $objectType = Document::class
+        string $objectType = Document::class,
     ) {
         parent::__construct($baseRepository, $objectType);
     }
 
     /**
      * @param string $uid The identifier of the object to find
+     *
      * @return DocumentInterface|null The matching object if found, otherwise NULL
+     *
      * @see findByIdentifier()
      */
     public function findByUid($uid): ?DocumentInterface
@@ -52,6 +52,7 @@ class FreeDocumentRepository extends AbstractBridge
      * In contrast to the default Repositories the method requires the argument to be a GUID string
      *
      * @param string $identifier The identifier of the object to find
+     *
      * @return DocumentInterface|null The matching object if found, otherwise NULL
      */
     public function findByIdentifier($identifier): ?DocumentInterface
@@ -68,7 +69,6 @@ class FreeDocumentRepository extends AbstractBridge
     /**
      * Return all objects of the given Document database
      *
-     * @param string $database
      * @return DocumentInterface[]|QueryResultInterface
      */
     public function findByDatabase(string $database): QueryResultInterface|array
@@ -80,9 +80,6 @@ class FreeDocumentRepository extends AbstractBridge
 
     /**
      * Count all objects of the given Document database
-     *
-     * @param string $database
-     * @return int
      */
     public function countByDatabase(string $database): int
     {
@@ -93,9 +90,6 @@ class FreeDocumentRepository extends AbstractBridge
 
     /**
      * Remove all Documents from the given database
-     *
-     * @param string $database
-     * @return void
      */
     public function removeAllFromDatabase(string $database): void
     {
@@ -104,21 +98,21 @@ class FreeDocumentRepository extends AbstractBridge
         $this->baseRepository->removeAllFromDatabase($database);
     }
 
-    public function findAll(string $database = null)
+    public function findAll(?string $database = null)
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
         return $this->baseRepository->findByDatabase($database);
     }
 
-    public function countAll(string $database = null): int
+    public function countAll(?string $database = null): int
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
         return $this->baseRepository->countByDatabase($database);
     }
 
-    public function removeAll(string $database = null): void
+    public function removeAll(?string $database = null): void
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 

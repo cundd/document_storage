@@ -18,6 +18,9 @@ use Cundd\Rest\DataProvider\IdentityProviderInterface;
 use Cundd\Rest\Domain\Model\ResourceType;
 use Cundd\Rest\Log\LoggerInterface;
 use Cundd\Rest\ObjectManagerInterface;
+use DateTime;
+use DateTimeImmutable;
+use Exception;
 use JsonSerializable;
 
 class DocumentDataProvider extends DataProvider implements DataProviderInterface
@@ -36,8 +39,8 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         IdentityProviderInterface $identityProvider,
         DocumentRepositoryFactory $documentRepositoryFactory,
         string $databaseName,
-        LoggerInterface $logger = null,
-        ?DataMapper $dataMapper = null
+        ?LoggerInterface $logger = null,
+        ?DataMapper $dataMapper = null,
     ) {
         parent::__construct($objectManager, $extractor, $identityProvider, $logger);
         $this->repository = $documentRepositoryFactory->buildDocumentRepository($databaseName);
@@ -61,8 +64,6 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     }
 
     /**
-     * @param int|array|string $identifier
-     * @param ResourceType     $resourceType
      * @return DocumentInterface|null
      */
     public function fetchModel(int|array|string $identifier, ResourceType $resourceType): ?object
@@ -70,8 +71,8 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         return $this->repository->findById($identifier);
     }
 
-    //public function createModel(array $data, ResourceType $resourceType)
-    //{
+    // public function createModel(array $data, ResourceType $resourceType)
+    // {
     //    // If no data is given return a new empty instance
     //    if (!$data) {
     //        return $this->getEmptyModelForResourceType($resourceType);
@@ -92,7 +93,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
     //
     //    // Get a fresh model
     //    return $this->convertIntoModel($data, $resourceType);
-    //}
+    // }
 
     public function convertIntoModel(array $data, ResourceType $resourceType): ?object
     {
@@ -122,7 +123,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
             $model->setDb($this->databaseName);
 
             return $model;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logException($exception);
 
             return null;
@@ -131,7 +132,7 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
 
     /**
      * @param DocumentInterface $model
-     * @param string            $propertyParameter
+     *
      * @return array|bool|float|int|mixed|string|null
      */
     public function getModelProperty($model, string $propertyParameter): mixed
@@ -159,9 +160,6 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
 
     /**
      * Returns the data from the given model
-     *
-     * @param mixed $model
-     * @return array
      */
     public function getModelData(mixed $model): ?array
     {
@@ -179,11 +177,11 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         }
 
         $unpackedData = $model->getUnpackedData();
-        if ($unpackedData === null) {
+        if (null === $unpackedData) {
             $unpackedData = [];
         }
         $properties = array_merge(
-            (array)$unpackedData,
+            (array) $unpackedData,
             $this->extractor->extract($model),
             [
                 '_meta' => [
@@ -204,10 +202,6 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         return $properties;
     }
 
-    /**
-     * @param $input
-     * @return string|null
-     */
     protected function buildDateFromValue($input): ?string
     {
         if (!is_numeric($input)) {
@@ -215,8 +209,8 @@ class DocumentDataProvider extends DataProvider implements DataProviderInterface
         }
 
         try {
-            return (new \DateTimeImmutable('@' . $input))->format(\DateTime::ATOM);
-        } catch (\Exception $e) {
+            return (new DateTimeImmutable('@' . $input))->format(DateTime::ATOM);
+        } catch (Exception $e) {
             return null;
         }
     }

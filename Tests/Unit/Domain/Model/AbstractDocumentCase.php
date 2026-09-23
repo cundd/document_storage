@@ -15,11 +15,8 @@ abstract class AbstractDocumentCase extends TestCase
     /**
      * @var Document
      */
-    protected $fixture = null;
+    protected $fixture;
 
-    /**
-     * @return Document
-     */
     abstract protected function buildDocument(): Document;
 
     protected function setUp(): void
@@ -109,7 +106,7 @@ abstract class AbstractDocumentCase extends TestCase
      */
     public function changeGuidTest()
     {
-        $id = (string)time();
+        $id = (string) time();
         $database = 'testdb';
         $this->fixture->setId($id);
         $this->fixture->setDb($database);

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Cundd\DocumentStorage\Service;
 
 use Cundd\DocumentStorage\Command\Output\NotFoundException;
+
 use function json_encode;
 use function preg_replace;
 use function str_replace;
+
 use const JSON_PRETTY_PRINT;
 
 class JsonFormatter
@@ -16,8 +18,6 @@ class JsonFormatter
      * Return a formatted json-encoded version of the given data
      *
      * @param mixed $data The data to format
-     * @param bool $withColors
-     * @return string
      */
     public function formatJsonData(mixed $data, bool $withColors = true): string
     {

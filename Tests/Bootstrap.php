@@ -13,10 +13,10 @@ class Bootstrap
 {
     public function run(): void
     {
-        class_alias(AbstractEntity::class, '\\TYPO3\\CMS\\Extbase\\' . 'DomainObject\\AbstractEntity');
-        class_alias(RepositoryInterface::class, '\\TYPO3\\CMS\\Extbase\\' . 'Persistence\\RepositoryInterface');
-        class_alias(SingletonInterface::class, '\\TYPO3\\CMS\\Core\\' . 'SingletonInterface');
-        class_alias(ClassNamingUtility::class, '\\TYPO3\\CMS\\Core\\' . 'Utility\\ClassNamingUtility');
+        class_alias(AbstractEntity::class, '\\TYPO3\\CMS\\Extbase\\DomainObject\\AbstractEntity');
+        class_alias(RepositoryInterface::class, '\\TYPO3\\CMS\\Extbase\\Persistence\\RepositoryInterface');
+        class_alias(SingletonInterface::class, '\\TYPO3\\CMS\\Core\\SingletonInterface');
+        class_alias(ClassNamingUtility::class, '\\TYPO3\\CMS\\Core\\Utility\\ClassNamingUtility');
     }
 }
 

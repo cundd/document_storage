@@ -9,6 +9,7 @@ use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Cundd\DocumentStorage\Persistence\Exception\DataMappingException;
+
 use function is_array;
 
 /**
@@ -21,6 +22,7 @@ class DataMapper
      *
      * @param string $className The name of the class
      * @param array  $rows      An array of arrays with field_name => value pairs
+     *
      * @return DocumentInterface[]|$className[] An array of objects of the given class
      */
     public function map(string $className, array $rows): array
@@ -40,10 +42,14 @@ class DataMapper
      * Map a single row on an object of the given class
      *
      * @template T
-     * @param string                $className The name of the target class
-     * @param array                 $row       A single array with field_name => value pairs
+     *
+     * @param string $className The name of the target class
+     * @param array  $row       A single array with field_name => value pairs
+     *
      * @psalm-param class-string<T> $className
+     *
      * @return DocumentInterface|null An object of the given class
+     *
      * @psalm-return T
      */
     public function mapSingleRow(string $className, array $row): ?DocumentInterface
@@ -53,7 +59,7 @@ class DataMapper
         }
 
         /** @var DocumentInterface $document */
-        $document = new $className;
+        $document = new $className();
 
         return $this->hydrate($document, $row);
     }
@@ -61,8 +67,8 @@ class DataMapper
     /**
      * Hydrate the given object with data from the row
      *
-     * @param DocumentInterface $document
-     * @param array             $row A single array with field_name => value pairs
+     * @param array $row A single array with field_name => value pairs
+     *
      * @return DocumentInterface returns the populated instance
      */
     public function hydrate(DocumentInterface $document, array $row): DocumentInterface
@@ -80,10 +86,10 @@ class DataMapper
             $document->setValueForKey($key, $row[$key]);
             unset($row[$key]);
         }
-        //if (isset($row['__identity'])) {
+        // if (isset($row['__identity'])) {
         //    $document->setValueForKey('uid', $row['__identity']);
         //    unset($row['__identity']);
-        //}
+        // }
 
         /*
          * Loop through each (remaining) key value pair from the input and

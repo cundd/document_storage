@@ -14,7 +14,7 @@ abstract class FixedDatabaseBridgeCase extends AbstractDocumentRepositoryCase
         $document = $this->buildDocument(['name' => 'Daniel', 'job' => 'Webdeveloper']);
         $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($document) {
-                /** @var CoreDocumentRepositoryInterface $prophecy */
+                /* @var CoreDocumentRepositoryInterface $prophecy */
                 $prophecy->add($document)->shouldBeCalled();
             }
         )->add($document);
@@ -36,7 +36,7 @@ abstract class FixedDatabaseBridgeCase extends AbstractDocumentRepositoryCase
         );
         $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($document) {
-                /** @var CoreDocumentRepositoryInterface $prophecy */
+                /* @var CoreDocumentRepositoryInterface $prophecy */
                 $prophecy->update($document)->shouldBeCalled();
             }
         )->update($document);
@@ -60,7 +60,7 @@ abstract class FixedDatabaseBridgeCase extends AbstractDocumentRepositoryCase
         );
         $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($document) {
-                /** @var CoreDocumentRepositoryInterface $prophecy */
+                /* @var CoreDocumentRepositoryInterface $prophecy */
                 $prophecy->remove($document)->shouldBeCalled();
             }
         )->remove($document);

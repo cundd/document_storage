@@ -16,16 +16,13 @@ class DocumentFilter
      * Loop through each Document and check it against each of the constraint properties
      *
      * @param QueryResultInterface|DocumentInterface[] $collection
-     * @param array                                    $constraints
-     * @param int                                      $limit
-     * @param bool                                     $strict Define if the comparison should be strict (using `!==`) or not (using `!=`)
-     * @return iterable
+     * @param bool                                     $strict     Define if the comparison should be strict (using `!==`) or not (using `!=`)
      */
     public function filterByProperties(
         iterable $collection,
         array $constraints,
         int $limit,
-        bool $strict = true
+        bool $strict = true,
     ): iterable {
         $resultCount = 0;
 
@@ -33,7 +30,7 @@ class DocumentFilter
             if ($this->documentMatchesProperties($constraints, $currentDocument, $strict)) {
                 yield $currentDocument;
 
-                $resultCount += 1;
+                ++$resultCount;
                 if ($resultCount >= $limit) {
                     return;
                 }
@@ -41,16 +38,10 @@ class DocumentFilter
         }
     }
 
-    /**
-     * @param array             $constraints
-     * @param DocumentInterface $currentDocument
-     * @param bool              $strict
-     * @return bool
-     */
     private function documentMatchesProperties(
         array $constraints,
         DocumentInterface $currentDocument,
-        bool $strict
+        bool $strict,
     ): bool {
         foreach ($constraints as $key => $constraint) {
             if (!str_contains($key, '.')) {

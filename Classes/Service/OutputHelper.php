@@ -28,7 +28,7 @@ class OutputHelper implements OutputHelperInterface
         OutputInterface $output,
         iterable $documents,
         bool $showBody = false,
-        array $keyPaths = []
+        array $keyPaths = [],
     ): void {
         foreach ($documents as $document) {
             $this->outputDocument($input, $output, $document, $showBody, $keyPaths);
@@ -40,7 +40,7 @@ class OutputHelper implements OutputHelperInterface
         OutputInterface $output,
         Document $document,
         bool $showBody = false,
-        array $keyPaths = []
+        array $keyPaths = [],
     ): void {
         $output->writeln(
             '<info>'
@@ -56,7 +56,7 @@ class OutputHelper implements OutputHelperInterface
                 $this->writeOutput($input, $output, $data);
             }
         } elseif ($showBody) {
-            $data = $document->getDataProtected() ? json_decode((string)$document->getDataProtected(), true) : [];
+            $data = $document->getDataProtected() ? json_decode((string) $document->getDataProtected(), true) : [];
             $this->writeOutput($input, $output, $data);
         }
     }
@@ -71,8 +71,6 @@ class OutputHelper implements OutputHelperInterface
      * Return a formatted json-encoded version of the given data
      *
      * @param mixed $data The data to format
-     * @param bool  $withColors
-     * @return string
      */
     private function formatJsonData(mixed $data, bool $withColors = true): string
     {
@@ -82,16 +80,16 @@ class OutputHelper implements OutputHelperInterface
     private function resolveKeyPath(Document $document, string $keyPath): ?array
     {
         $asteriskCount = substr_count($keyPath, '*');
-        if ($asteriskCount === 0) {
+        if (0 === $asteriskCount) {
             return $this->valueForKeyPath($document, $keyPath);
         }
 
-        if ($asteriskCount === 1) {
+        if (1 === $asteriskCount) {
             [$lead, $tail] = explode('*', $keyPath, 2);
             $leadKeyPath = rtrim($lead, '.');
             $leadResult = $document->valueForKeyPath($leadKeyPath, NotFoundException::instance());
 
-            if ($leadResult === null) {
+            if (null === $leadResult) {
                 return null;
             }
             if (!is_iterable($leadResult)) {
@@ -104,11 +102,6 @@ class OutputHelper implements OutputHelperInterface
         throw new InvalidArgumentException('Maximum of one asterisk in key-path is supported');
     }
 
-    /**
-     * @param iterable $leadResult
-     * @param string   $keyPath
-     * @return array
-     */
     private function valueForAsteriskKeyPath(iterable $leadResult, string $keyPath): array
     {
         if ('' === $keyPath) {
@@ -129,10 +122,7 @@ class OutputHelper implements OutputHelperInterface
     }
 
     /**
-     * @param mixed  $input
-     * @param string $keyPath
-     * @param null   $default
-     * @return mixed
+     * @param null $default
      */
     private function valueForKeyPath(mixed $input, string $keyPath, $default = null): mixed
     {
