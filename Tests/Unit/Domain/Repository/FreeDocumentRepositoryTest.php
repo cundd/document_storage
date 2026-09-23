@@ -11,7 +11,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 
 use function count;
 
-class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
+final class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
 {
     protected function buildRepositoryWithCore(
         CoreDocumentRepositoryInterface $coreDocumentRepository,
@@ -21,36 +21,42 @@ class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
 
     protected function getTestDatabaseName(): string
     {
-        return 'some-datbase';
+        return 'some-database';
     }
 
-    public function testAdd()
+    public function testAdd(): void
     {
-        $document = $this->buildDocument(
-            ['name' => 'Daniel', 'job' => 'Webdeveloper', 'db' => $this->getTestDatabaseName()]
-        );
+        $document = $this->buildDocument([
+            'name' => 'Daniel',
+            'job'  => 'Webdeveloper',
+            'db'   => $this->getTestDatabaseName(),
+        ]);
         $this->buildRepository(
             function ($configureBaseRepositoryProphecy) use ($document) {
-                /* @var ObjectProphecy|CoreDocumentRepositoryInterface $configureBaseRepositoryProphecy */
-                $configureBaseRepositoryProphecy->add($document)->shouldBeCalled();
+                $configureBaseRepositoryProphecy
+                    ->add($document)
+                    ->shouldBeCalled();
             }
         )->add($document);
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
-        $document = $this->buildDocument(
-            ['name' => 'Daniel', 'job' => 'Webdeveloper', 'db' => $this->getTestDatabaseName()]
-        );
+        $document = $this->buildDocument([
+            'name' => 'Daniel',
+            'job'  => 'Webdeveloper',
+            'db'   => $this->getTestDatabaseName(),
+        ]);
         $this->buildRepository(
             function ($configureBaseRepositoryProphecy) use ($document) {
-                /* @var ObjectProphecy|CoreDocumentRepositoryInterface $configureBaseRepositoryProphecy */
-                $configureBaseRepositoryProphecy->update($document)->shouldBeCalled();
+                $configureBaseRepositoryProphecy
+                    ->update($document)
+                    ->shouldBeCalled();
             }
         )->update($document);
     }
 
-    public function testFindByDatabase()
+    public function testFindByDatabase(): void
     {
         $database = $this->getTestDatabaseName();
         $documents = [
@@ -59,33 +65,35 @@ class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
         ];
         $result = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($database, $documents) {
-                /* @var CoreDocumentRepositoryInterface $prophecy */
-                $prophecy->findByDatabase($database)->willReturn($documents)->shouldBeCalled();
+                $prophecy
+                    ->findByDatabase($database)
+                    ->willReturn($documents)
+                    ->shouldBeCalled();
             }
         )->findByDatabase($database);
         $this->assertSame(count($documents), count($result));
     }
 
-    public function testRemoveAllFromDatabase()
+    public function testRemoveAllFromDatabase(): void
     {
         $database = $this->getTestDatabaseName();
         $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($database) {
-                /* @var CoreDocumentRepositoryInterface $prophecy */
-                /* @noinspection PhpVoidFunctionResultUsedInspection */
                 $prophecy->removeAllFromDatabase($database)->shouldBeCalled();
             }
         )->removeAllFromDatabase($database);
     }
 
-    public function testCountByDatabase()
+    public function testCountByDatabase(): void
     {
         $expectedCount = 192;
         $database = $this->getTestDatabaseName();
         $result = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($expectedCount, $database) {
-                /* @var CoreDocumentRepositoryInterface $prophecy */
-                $prophecy->countByDatabase($database)->willReturn($expectedCount)->shouldBeCalled();
+                $prophecy
+                    ->countByDatabase($database)
+                    ->willReturn($expectedCount)
+                    ->shouldBeCalled();
             }
         )->countByDatabase($database);
         $this->assertSame($expectedCount, $result);
@@ -94,8 +102,9 @@ class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
     /**
      * @return FreeDocumentRepository
      */
-    protected function buildRepository(?callable $configureCoreRepositoryProphecy = null): DocumentRepositoryInterface
-    {
+    protected function buildRepository(
+        ?callable $configureCoreRepositoryProphecy = null,
+    ): DocumentRepositoryInterface {
         return parent::buildRepository($configureCoreRepositoryProphecy);
     }
 }

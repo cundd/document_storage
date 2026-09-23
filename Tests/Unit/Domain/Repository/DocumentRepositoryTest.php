@@ -11,7 +11,7 @@ use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface
 use function bin2hex;
 use function random_bytes;
 
-class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
+final class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
 {
     /**
      * @var string
@@ -21,7 +21,6 @@ class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
     protected function setUp(): void
     {
         parent::setUp();
-        /* @noinspection PhpUnhandledExceptionInspection */
         $this->testDatabaseName = bin2hex(random_bytes(12));
     }
 

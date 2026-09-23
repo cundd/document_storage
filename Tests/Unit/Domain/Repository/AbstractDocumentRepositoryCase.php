@@ -22,13 +22,20 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
 {
     use ProphecyTrait;
 
+    /**
+     * @template T of DocumentInterface
+     *
+     * @param CoreDocumentRepositoryInterface<T> $coreDocumentRepository
+     *
+     * @return DocumentRepositoryInterface<T>
+     */
     abstract protected function buildRepositoryWithCore(
         CoreDocumentRepositoryInterface $coreDocumentRepository,
     ): DocumentRepositoryInterface;
 
     abstract protected function getTestDatabaseName(): string;
 
-    public function testFindWithProperties()
+    public function testFindWithProperties(): void
     {
         $database = $this->getTestDatabaseName();
         $documents = [
@@ -43,22 +50,20 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
 
         $result = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($properties, $documents) {
-                /* @var CoreDocumentRepositoryInterface $prophecy */
-                $prophecy->findWithProperties($properties, PHP_INT_MAX)->willReturn(
-                    $documents
-                )->shouldBeCalled();
+                $prophecy
+                    ->findWithProperties($properties, PHP_INT_MAX)
+                    ->willReturn($documents)
+                    ->shouldBeCalled();
             }
         )->findWithProperties($properties);
         $this->assertSame(count($documents), count($result));
     }
 
-    public function testRemoveAll()
+    public function testRemoveAll(): void
     {
         $database = $this->getTestDatabaseName();
         $documentRepository = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($database) {
-                /* @var CoreDocumentRepositoryInterface $prophecy */
-                /* @noinspection PhpVoidFunctionResultUsedInspection */
                 $prophecy->removeAllFromDatabase($database)->shouldBeCalled();
             }
         );
@@ -69,7 +74,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         }
     }
 
-    public function testFindAll()
+    public function testFindAll(): void
     {
         $database = $this->getTestDatabaseName();
         $documents = [
@@ -78,8 +83,10 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         ];
         $documentRepository = $this->buildRepository(
             function (ObjectProphecy $prophecy) use ($database, $documents) {
-                /* @var CoreDocumentRepositoryInterface $prophecy */
-                $prophecy->findByDatabase($database)->willReturn($documents)->shouldBeCalled();
+                $prophecy
+                    ->findByDatabase($database)
+                    ->willReturn($documents)
+                    ->shouldBeCalled();
             }
         );
         if ($documentRepository instanceof FreeDocumentRepository) {
@@ -90,7 +97,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         $this->assertSame(count($documents), count($result));
     }
 
-    public function testCountAll()
+    public function testCountAll(): void
     {
         $expectedCount = 192;
         $database = $this->getTestDatabaseName();
@@ -110,23 +117,29 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         $this->assertSame($expectedCount, $result);
     }
 
-    protected function buildRepository(?callable $configureCoreRepositoryProphecy = null): DocumentRepositoryInterface
-    {
-        $coreRepositoryProphecy = $this->prophesize(CoreDocumentRepositoryInterface::class);
+    protected function buildRepository(
+        ?callable $configureCoreRepositoryProphecy = null,
+    ): DocumentRepositoryInterface {
+        $coreRepositoryProphecy = $this->prophesize(
+            CoreDocumentRepositoryInterface::class
+        );
         if ($configureCoreRepositoryProphecy) {
             $configureCoreRepositoryProphecy($coreRepositoryProphecy);
         }
 
-        /** @var CoreDocumentRepositoryInterface $coreRepository */
-        $coreRepository = $coreRepositoryProphecy->reveal();
-
-        return $this->buildRepositoryWithCore($coreRepository);
+        return $this->buildRepositoryWithCore(
+            $coreRepositoryProphecy->reveal()
+        );
     }
 
     public static function buildDocument(?array $data = null): DocumentInterface
     {
         if (null === $data) {
-            $data = ['name' => 'Daniel', 'job' => 'Webdeveloper', 'dayOfBirth' => new DateTime()];
+            $data = [
+                'name'       => 'Daniel',
+                'job'        => 'Webdeveloper',
+                'dayOfBirth' => new DateTime(),
+            ];
         }
         $document = new Document();
         foreach ($data as $key => $value) {
