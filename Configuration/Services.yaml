@@ -8,16 +8,10 @@ services:
   Cundd\DocumentStorage\:
     resource: "../Classes/*"
 
-  Cundd\DocumentStorage\Rest\DocumentHandler:
-    public: true
-
   Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory:
     public: true
 
   Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository:
-    autowire: false
-
-  Cundd\DocumentStorage\Rest\DocumentDataProvider:
     autowire: false
 
   Cundd\DocumentStorage\Command\GeneralCommandController:
