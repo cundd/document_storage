@@ -7,40 +7,39 @@ namespace Cundd\DocumentStorage\Domain\Model;
 use DateTimeImmutable;
 
 /**
- * Class Database
- *
  * Information about a database as specified in Documents
  */
-class Database
+final readonly class Database
 {
-    /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @var DateTimeImmutable
-     */
-    private $creationTime;
-
-    /**
-     * Database constructor
-     */
     public function __construct(
-        string $name,
-        ?DateTimeImmutable $creationTime,
+        public string $name,
+        public ?DateTimeImmutable $creationTime,
     ) {
-        $this->name = $name;
-        $this->creationTime = $creationTime;
     }
 
+    /**
+     * @deprecated use $name directly
+     */
     public function getName(): string
     {
+        trigger_error(
+            __METHOD__ . ' is deprecated use property instead',
+            E_USER_DEPRECATED
+        );
+
         return $this->name;
     }
 
+    /**
+     * @deprecated use $creationTime directly
+     */
     public function getCreationTime(): ?DateTimeImmutable
     {
+        trigger_error(
+            __METHOD__ . ' is deprecated use property instead',
+            E_USER_DEPRECATED
+        );
+
         return $this->creationTime;
     }
 }

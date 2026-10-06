@@ -91,8 +91,8 @@ final class DocumentTest extends TestCase
     #[Test]
     public function getInitialDbTest(): void
     {
-        $result = $this->fixture->getDb();
-        $this->assertEquals('', $result);
+        $result = $this->fixture->hasDb();
+        $this->assertFalse($result);
     }
 
     #[Test]

@@ -7,10 +7,10 @@
 				<source>Document</source>
 			</trans-unit>
 			<trans-unit id="tx_documentstorage_domain_model_document.id">
-				<source>Id</source>
+				<source>ID</source>
 			</trans-unit>
 			<trans-unit id="tx_documentstorage_domain_model_document.db">
-				<source>Db</source>
+				<source>Database</source>
 			</trans-unit>
 			<trans-unit id="tx_documentstorage_domain_model_document.data_protected">
 				<source>Data Protected</source>

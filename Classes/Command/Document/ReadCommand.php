@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cundd\DocumentStorage\Command;
+namespace Cundd\DocumentStorage\Command\Document;
 
+use Cundd\DocumentStorage\Command\AbstractCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -11,17 +12,34 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function sprintf;
 
-class ReadCommandController extends AbstractCommandController
+final class ReadCommand extends AbstractCommand
 {
     protected function configure(): void
     {
-        $help = 'Display a Document/all Documents from the database.';
         $this->setDescription('Read Documents from the database')
-            ->setHelp($help)
-            ->addArgument('database', InputArgument::REQUIRED, 'Name of the database')
-            ->addArgument('id', InputArgument::OPTIONAL, 'ID of the Document to show (omit to show all)')
-            ->addOption('count', 'c', InputOption::VALUE_NONE, 'Count the Documents in the database')
-            ->addOption('short', 's', InputOption::VALUE_NONE, 'Show only the headers of the Documents')
+            ->setHelp('Display a Document/all Documents from the database.')
+            ->addArgument(
+                'database',
+                InputArgument::REQUIRED,
+                'Name of the database'
+            )
+            ->addArgument(
+                'id',
+                InputArgument::OPTIONAL,
+                'ID of the Document to show (omit to show all)'
+            )
+            ->addOption(
+                'count',
+                'c',
+                InputOption::VALUE_NONE,
+                'Count the Documents in the database'
+            )
+            ->addOption(
+                'short',
+                's',
+                InputOption::VALUE_NONE,
+                'Show only the headers of the Documents'
+            )
             ->addOption(
                 'key-paths',
                 'k',
@@ -30,8 +48,10 @@ class ReadCommandController extends AbstractCommandController
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         $db = $input->getArgument('database');
         $id = $input->getArgument('id');
         $keyPaths = $input->getOption('key-paths');

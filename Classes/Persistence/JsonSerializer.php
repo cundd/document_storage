@@ -5,40 +5,52 @@ declare(strict_types=1);
 namespace Cundd\DocumentStorage\Persistence;
 
 use Cundd\DocumentStorage\Exception\InvalidDocumentException;
+use JsonException;
 
 use function json_decode;
 use function json_encode;
-use function json_last_error;
-use function json_last_error_msg;
 use function strtolower;
 
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
-class JsonSerializer
+final class JsonSerializer
 {
+    /**
+     * @param array<mixed,mixed> $data
+     */
     public function serialize(?array $data): string
     {
-        return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        try {
+            return json_encode(
+                $data,
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
+            );
+        } catch (JsonException $e) {
+            throw new InvalidDocumentException(
+                'Could not serialize data',
+                1790171909
+            );
+        }
     }
 
     /**
      * @return mixed|null
      */
-    public function deserialize(?string $data)
+    public function deserialize(?string $data): mixed
     {
         if (!$data || 'null' === strtolower($data)) {
             return null;
         }
 
-        $deserialized = json_decode($data, true);
-        if (null === $deserialized) {
+        try {
+            return json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
             throw new InvalidDocumentException(
-                'Invalid JSON data: ' . json_last_error_msg(),
-                json_last_error()
+                'Invalid JSON data: ' . $e->getMessage(),
+                $e->getCode(),
+                $e
             );
         }
-
-        return $deserialized;
     }
 }

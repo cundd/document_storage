@@ -7,17 +7,13 @@ namespace Cundd\DocumentStorage\Exception;
 /**
  * Exception thrown if the given ID is invalid
  */
-class InvalidIdException extends DomainException
+final class InvalidIdException extends DomainException
 {
     /**
-     * @param string|int $id
+     * @phpstan-assert non-empty-string|int<0,max> $id
      */
-    public static function assertValidId($id)
+    public static function assertValidId(string|int $id): void
     {
-        if (!is_string($id) && !is_int($id)) {
-            throw new static('ID must be either a string or integer value', 1389258925);
-        }
-
         $cleanId = str_replace(['-', '_'], '', (string) $id);
         if (!trim($cleanId)) {
             throw new static('ID must must not be empty', 1389258924);

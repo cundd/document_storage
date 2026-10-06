@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Tests\Unit\Domain\Repository;
 
+use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryInterface;
 use Cundd\DocumentStorage\Domain\Repository\FreeDocumentRepository;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
@@ -16,7 +17,7 @@ final class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
     protected function buildRepositoryWithCore(
         CoreDocumentRepositoryInterface $coreDocumentRepository,
     ): DocumentRepositoryInterface {
-        return new FreeDocumentRepository($coreDocumentRepository);
+        return new FreeDocumentRepository($coreDocumentRepository); // @phpstan-ignore argument.type, return.type
     }
 
     protected function getTestDatabaseName(): string
@@ -100,11 +101,11 @@ final class FreeDocumentRepositoryTest extends AbstractDocumentRepositoryCase
     }
 
     /**
-     * @return FreeDocumentRepository
+     * @return FreeDocumentRepository<DocumentInterface>
      */
     protected function buildRepository(
         ?callable $configureCoreRepositoryProphecy = null,
     ): DocumentRepositoryInterface {
-        return parent::buildRepository($configureCoreRepositoryProphecy);
+        return parent::buildRepository($configureCoreRepositoryProphecy); // @phpstan-ignore return.type
     }
 }

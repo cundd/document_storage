@@ -9,7 +9,7 @@ use Cundd\DocumentStorage\Persistence\DataMapper;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 
-class DataMapperTest extends TestCase
+final class DataMapperTest extends TestCase
 {
     private DataMapper $fixture;
 
@@ -25,7 +25,7 @@ class DataMapperTest extends TestCase
         parent::tearDown();
     }
 
-    public function testMapSingleRow()
+    public function testMapSingleRow(): void
     {
         $dateTime = new DateTime('now');
         $result = $this->fixture->mapSingleRow(
@@ -39,7 +39,7 @@ class DataMapperTest extends TestCase
         $this->assertSame($dateTime, $result->valueForKey('dayOfBirth'));
     }
 
-    public function testMap()
+    public function testMap(): void
     {
         $rows = [
             ['name' => 'Daniel', 'job' => 'Webdeveloper', 'dayOfBirth' => new DateTime('now')],
@@ -47,7 +47,6 @@ class DataMapperTest extends TestCase
         ];
         $results = $this->fixture->map(Document::class, $rows);
 
-        $this->assertIsArray($results);
         foreach ($results as $i => $result) {
             $this->assertInstanceOf(Document::class, $result);
             $this->assertSame($rows[$i]['name'], $result->valueForKey('name'));

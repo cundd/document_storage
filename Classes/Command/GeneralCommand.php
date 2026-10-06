@@ -12,9 +12,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function explode;
 
-class GeneralCommandController extends AbstractCommandController
+final class GeneralCommand extends AbstractCommand
 {
-    protected static $defaultName = 'document-storage';
+    protected static string $defaultName = 'document-storage';
 
     protected function configure(): void
     {
@@ -60,14 +60,16 @@ class GeneralCommandController extends AbstractCommandController
             [$database, $id] = explode('/', $database);
         }
 
+        $application = $this->getApplication();
+        assert(null !== $application);
         if ($database) {
-            $command = $this->getApplication()->find('document-storage:read');
+            $command = $application->find('document-storage:document:read');
             $arguments = [
                 'database' => $database,
                 'id'       => $id,
             ];
         } else {
-            $command = $this->getApplication()->find('document-storage:list');
+            $command = $application->find('document-storage:document:list');
             $arguments = [];
         }
 

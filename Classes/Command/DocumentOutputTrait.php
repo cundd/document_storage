@@ -18,7 +18,10 @@ trait DocumentOutputTrait
     }
 
     /**
-     * Displays information about the given Documents
+     * Display information about the given Documents
+     *
+     * @param Document[]         $documents
+     * @param non-empty-string[] $keyPaths
      */
     protected function outputDocuments(
         InputInterface $input,
@@ -31,7 +34,9 @@ trait DocumentOutputTrait
     }
 
     /**
-     * Displays information about the given Document
+     * Display information about the given Document
+     *
+     * @param non-empty-string[] $keyPaths
      */
     protected function outputDocument(
         InputInterface $input,

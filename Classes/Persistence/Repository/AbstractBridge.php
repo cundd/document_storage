@@ -12,59 +12,78 @@ use TYPO3\CMS\Extbase\Persistence\Generic\QuerySettingsInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
- * The Bridge builds the connection between the various Document repository implementations and the concrete Core
- * Document Repository
+ * The Bridge builds the connection between the various Document repository
+ * implementations and the concrete Core Document Repository
+ *
+ * @template T of DocumentInterface
+ *
+ * @implements DocumentRepositoryInterface<T>
+ *
+ * @internal
  */
 abstract class AbstractBridge implements DocumentRepositoryInterface
 {
-    protected CoreDocumentRepositoryInterface $baseRepository;
-
     /**
      * Construct a new Document Repository
+     *
+     * @param CoreDocumentRepositoryInterface<T> $baseRepository
+     * @param class-string<T>                    $objectType
      */
     public function __construct(
-        CoreDocumentRepositoryInterface $baseRepository,
-        string $objectType = Document::class,
+        protected readonly CoreDocumentRepositoryInterface $baseRepository,
+        protected readonly string $objectType = Document::class,
     ) {
-        $this->baseRepository = $baseRepository;
     }
 
-    abstract protected function checkDocumentDatabase(DocumentInterface $object): DocumentInterface;
+    /**
+     * @param T $object
+     *
+     * @return T
+     */
+    abstract protected function checkDocumentDatabase(
+        DocumentInterface $object,
+    ): DocumentInterface;
 
     /**
-     * @param DocumentInterface $object
+     * @param T $object
      */
-    public function add($object)
+    public function add($object): void
     {
         $this->baseRepository->add($this->checkDocumentDatabase($object));
     }
 
     /**
-     * @param DocumentInterface $object
+     * @param T $object
      */
-    public function remove($object)
+    public function remove($object): void
     {
         $this->baseRepository->remove($this->checkDocumentDatabase($object));
     }
 
     /**
-     * @param DocumentInterface $modifiedObject
+     * @param T $modifiedObject
      */
-    public function update($modifiedObject)
+    public function update($modifiedObject): void
     {
         $this->baseRepository->update($this->checkDocumentDatabase($modifiedObject));
     }
 
-    public function setDefaultOrderings(array $defaultOrderings)
+    /**
+     * @param array<non-empty-string,'ASC'|'DESC'> $defaultOrderings
+     */
+    public function setDefaultOrderings(array $defaultOrderings): void
     {
         throw new BadFunctionCallException(__METHOD__ . ' is not implemented');
     }
 
-    public function setDefaultQuerySettings(QuerySettingsInterface $defaultQuerySettings)
+    public function setDefaultQuerySettings(QuerySettingsInterface $defaultQuerySettings): void
     {
         throw new BadFunctionCallException(__METHOD__ . ' is not implemented');
     }
 
+    /**
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryInterface<T>
+     */
     public function createQuery()
     {
         throw new BadFunctionCallException(__METHOD__ . ' is not implemented');

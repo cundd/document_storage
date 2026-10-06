@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cundd\DocumentStorage\Command;
+namespace Cundd\DocumentStorage\Command\Document;
 
+use Cundd\DocumentStorage\Command\AbstractCommand;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -16,15 +17,21 @@ use function json_last_error_msg;
 
 use const STDIN;
 
-class CreateCommandController extends AbstractCommandController
+final class CreateCommand extends AbstractCommand
 {
     protected function configure(): void
     {
-        $help = 'Create a new Document.';
         $this->setDescription('Create a new Document')
-            ->setHelp($help)
-            ->addArgument('database', InputArgument::REQUIRED, 'Document database')
-            ->addArgument('id', InputArgument::REQUIRED, 'Document ID')
+            ->addArgument(
+                'database',
+                InputArgument::REQUIRED,
+                'Document database'
+            )
+            ->addArgument(
+                'id',
+                InputArgument::REQUIRED,
+                'Document ID'
+            )
             ->addArgument(
                 'data',
                 InputArgument::OPTIONAL,
@@ -32,8 +39,10 @@ class CreateCommandController extends AbstractCommandController
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         $id = $input->getArgument('id');
         $db = $input->getArgument('database');
         $documentRepository = $this->getDocumentRepository();

@@ -14,9 +14,9 @@ use function random_bytes;
 final class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
 {
     /**
-     * @var string
+     * @var non-empty-string
      */
-    private $testDatabaseName;
+    private string $testDatabaseName;
 
     protected function setUp(): void
     {
@@ -33,7 +33,10 @@ final class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
     protected function buildRepositoryWithCore(
         CoreDocumentRepositoryInterface $coreDocumentRepository,
     ): DocumentRepositoryInterface {
-        return new DocumentRepository($this->getTestDatabaseName(), $coreDocumentRepository);
+        return new DocumentRepository( // @phpstan-ignore return.type
+            $this->getTestDatabaseName(),
+            $coreDocumentRepository // @phpstan-ignore argument.type
+        );
     }
 
     protected function getTestDatabaseName(): string

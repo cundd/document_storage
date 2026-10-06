@@ -2,25 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Cundd\DocumentStorage\Command;
+namespace Cundd\DocumentStorage\Command\Document;
 
+use Cundd\DocumentStorage\Command\AbstractCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class DeleteCommandController extends AbstractCommandController
+final class DeleteCommand extends AbstractCommand
 {
     protected function configure(): void
     {
-        $help = 'Remove a Document from the database.';
         $this->setDescription('Remove a Document from the database')
-            ->setHelp($help)
             ->addArgument('database', InputArgument::REQUIRED, 'Document database')
             ->addArgument('id', InputArgument::REQUIRED, 'Document ID');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         $db = $input->getArgument('database');
         $id = $input->getArgument('id');
 

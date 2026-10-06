@@ -6,7 +6,7 @@ namespace Cundd\DocumentStorage\Domain\Repository;
 
 use Cundd\DocumentStorage\DocumentFilter;
 use Cundd\DocumentStorage\Domain\Model\Document;
-use Cundd\DocumentStorage\Persistence\DataMapper;
+use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
 use InvalidArgumentException;
@@ -15,31 +15,42 @@ use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use function is_subclass_of;
 use function sprintf;
 
-class DocumentRepositoryFactory
+final class DocumentRepositoryFactory
 {
     public function __construct(
-        private readonly DataMapper $dataMapper,
         private readonly DocumentFilter $documentFilter,
         private readonly PersistenceManagerInterface $persistenceManager,
     ) {
     }
 
-    public function buildCoreDocumentRepository(string $objectType = Document::class): CoreDocumentRepositoryInterface
-    {
+    /**
+     * @template T of DocumentInterface
+     *
+     * @param class-string<T> $objectType
+     *
+     * @return CoreDocumentRepositoryInterface<T>
+     *
+     * @internal
+     */
+    public function buildCoreDocumentRepository(
+        string $objectType = Document::class,
+    ): CoreDocumentRepositoryInterface {
         return CoreDocumentRepository::build(
             $objectType,
-            $this->dataMapper,
             $this->documentFilter,
             $this->persistenceManager,
         );
     }
 
     /**
-     * @template R of DocumentRepository
+     * @template T of DocumentInterface
+     * @template R of DocumentRepository<T>
      *
-     * @psalm-param class-string<R> $repositoryClass
+     * @param non-empty-string $database
+     * @param class-string<T>  $objectType
+     * @param class-string<R>  $repositoryClass
      *
-     * @psalm-return R
+     * @return ($repositoryClass is string ? R : DocumentRepository<T>)
      */
     public function buildDocumentRepository(
         string $database,
@@ -48,16 +59,23 @@ class DocumentRepositoryFactory
     ): DocumentRepository {
         $baseDocumentRepository = CoreDocumentRepository::build(
             $objectType,
-            $this->dataMapper,
             $this->documentFilter,
             $this->persistenceManager,
         );
         if (null === $repositoryClass) {
-            return new DocumentRepository($database, $baseDocumentRepository, $objectType);
+            return new DocumentRepository(
+                $database,
+                $baseDocumentRepository,
+                $objectType
+            );
         }
 
         if (is_subclass_of($repositoryClass, DocumentRepository::class)) {
-            return new $repositoryClass($database, $baseDocumentRepository, $objectType);
+            return new $repositoryClass(
+                $database,
+                $baseDocumentRepository,
+                $objectType
+            );
         }
 
         throw new InvalidArgumentException(
@@ -70,11 +88,13 @@ class DocumentRepositoryFactory
     }
 
     /**
-     * @template R of FreeDocumentRepository
+     * @template T of DocumentInterface
+     * @template R of FreeDocumentRepository<T>
      *
-     * @psalm-param class-string<R> $repositoryClass
+     * @param class-string<T> $objectType
+     * @param class-string<R> $repositoryClass
      *
-     * @psalm-return R
+     * @return ($repositoryClass is string ? R : FreeDocumentRepository<T>)
      */
     public function buildFreeDocumentRepository(
         string $objectType = Document::class,
@@ -82,7 +102,6 @@ class DocumentRepositoryFactory
     ): FreeDocumentRepository {
         $baseDocumentRepository = CoreDocumentRepository::build(
             $objectType,
-            $this->dataMapper,
             $this->documentFilter,
             $this->persistenceManager,
         );

@@ -13,7 +13,8 @@ interface OutputHelperInterface
     /**
      * Display information about the given Documents
      *
-     * @param string[] $keyPaths
+     * @param iterable<Document> $documents
+     * @param non-empty-string[] $keyPaths
      */
     public function outputDocuments(
         InputInterface $input,
@@ -26,7 +27,7 @@ interface OutputHelperInterface
     /**
      * Display information about the given Document
      *
-     * @param string[] $keyPaths
+     * @param non-empty-string[] $keyPaths
      */
     public function outputDocument(
         InputInterface $input,

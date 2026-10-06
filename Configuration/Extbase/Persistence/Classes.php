@@ -2,15 +2,11 @@
 
 declare(strict_types=1);
 
+use Cundd\DocumentStorage\Constants;
+use Cundd\DocumentStorage\Domain\Model\Document;
+
 return [
-    \Cundd\DocumentStorage\Domain\Model\Document::class => [
-        'properties' => [
-            'modificationTime' => [
-                'fieldName' => 'tstamp',
-            ],
-            'creationTime'     => [
-                'fieldName' => 'crdate',
-            ],
-        ],
+    Document::class => [
+        'properties' => Constants::DOCUMENTS_FIELD_MAPPING,
     ],
 ];

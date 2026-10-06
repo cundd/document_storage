@@ -9,14 +9,21 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
  * Class to filter a collection of Documents according to given constraints
+ *
+ * @phpstan-type Constraints array<non-empty-string,mixed>
  */
-class DocumentFilter
+final class DocumentFilter
 {
     /**
      * Loop through each Document and check it against each of the constraint properties
      *
-     * @param QueryResultInterface|DocumentInterface[] $collection
-     * @param bool                                     $strict     Define if the comparison should be strict (using `!==`) or not (using `!=`)
+     * @template T of DocumentInterface
+     *
+     * @param T[]|QueryResultInterface<int,T> $collection
+     * @param Constraints                     $constraints
+     * @param bool                            $strict      Define if the comparison should be strict (using `!==`) or not (using `!=`)
+     *
+     * @return T[]
      */
     public function filterByProperties(
         iterable $collection,
@@ -38,6 +45,9 @@ class DocumentFilter
         }
     }
 
+    /**
+     * @param Constraints $constraints
+     */
     private function documentMatchesProperties(
         array $constraints,
         DocumentInterface $currentDocument,

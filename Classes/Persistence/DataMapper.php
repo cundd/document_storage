@@ -15,22 +15,16 @@ use function is_array;
 /**
  * Data Mapper allows to create and populate Documents with data
  */
-class DataMapper
+class DataMapper implements DataMapperInterface
 {
-    /**
-     * Map the given rows on objects
-     *
-     * @param string $className The name of the class
-     * @param array  $rows      An array of arrays with field_name => value pairs
-     *
-     * @return DocumentInterface[]|$className[] An array of objects of the given class
-     */
     public function map(string $className, array $rows): array
     {
         $objects = [];
         foreach ($rows as $row) {
             if (!is_array($row)) {
-                throw new DataMappingException('Argument "rows" must be an array of arrays');
+                throw new DataMappingException(
+                    'Argument "rows" must be an array of arrays'
+                );
             }
             $objects[] = $this->mapSingleRow($className, $row);
         }
@@ -38,41 +32,33 @@ class DataMapper
         return $objects;
     }
 
-    /**
-     * Map a single row on an object of the given class
-     *
-     * @template T
-     *
-     * @param string $className The name of the target class
-     * @param array  $row       A single array with field_name => value pairs
-     *
-     * @psalm-param class-string<T> $className
-     *
-     * @return DocumentInterface|null An object of the given class
-     *
-     * @psalm-return T
-     */
-    public function mapSingleRow(string $className, array $row): ?DocumentInterface
-    {
-        if (!is_a($className, Document::class, true)) {
-            throw new InvalidDocumentException('Target class must be a subclass of Document');
+    public function mapSingleRow(
+        string $className,
+        array $row,
+    ): DocumentInterface {
+        if (!is_a($className, DocumentInterface::class, true)) {
+            throw new InvalidDocumentException(
+                'Target class must be a subclass of Document'
+            );
         }
 
-        /** @var DocumentInterface $document */
-        $document = new $className();
-
-        return $this->hydrate($document, $row);
+        return $this->hydrate(new $className(), $row);
     }
 
     /**
      * Hydrate the given object with data from the row
      *
-     * @param array $row A single array with field_name => value pairs
+     * @template T of DocumentInterface
      *
-     * @return DocumentInterface returns the populated instance
+     * @param T                   $document
+     * @param array<string,mixed> $row      A single array with field_name => value pairs
+     *
+     * @return T Returns the populated instance
      */
-    public function hydrate(DocumentInterface $document, array $row): DocumentInterface
-    {
+    public function hydrate(
+        DocumentInterface $document,
+        array $row,
+    ): DocumentInterface {
         /*
          * Check if the input has a value for key 'data_private' or
          * 'dataProtected' and set it first
@@ -86,16 +72,13 @@ class DataMapper
             $document->setValueForKey($key, $row[$key]);
             unset($row[$key]);
         }
-        // if (isset($row['__identity'])) {
-        //    $document->setValueForKey('uid', $row['__identity']);
-        //    unset($row['__identity']);
-        // }
 
         /*
          * Loop through each (remaining) key value pair from the input and
          * assign it to the Document
          */
         foreach ($row as $key => $value) {
+            assert(!empty($key));
             $document->setValueForKey($key, $value);
         }
 

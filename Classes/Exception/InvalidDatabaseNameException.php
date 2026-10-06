@@ -10,26 +10,29 @@ use function str_replace;
 /**
  * Exception thrown if the given database name is invalid
  */
-class InvalidDatabaseNameException extends DomainException
+final class InvalidDatabaseNameException extends DomainException
 {
-    public static function assertValidDatabaseName($database)
+    /**
+     * @phpstan-assert non-empty-string $database
+     */
+    public static function assertValidDatabaseName(mixed $database): void
     {
         if (!is_string($database)) {
-            throw new InvalidDatabaseNameException('Database name must be a string', 1557387584);
+            throw new static('Database name must be a string', 1557387584);
         }
 
         $cleanName = str_replace(['-', '_'], '', $database);
         if ('' === trim($cleanName)) {
-            throw new InvalidDatabaseNameException('Database name must not be empty', 1551889307);
+            throw new static('Database name must not be empty', 1551889307);
         }
         if (!ctype_alnum($cleanName)) {
-            throw new InvalidDatabaseNameException(
+            throw new static(
                 'Database name must contain only alphanumeric characters, "-" and "_"',
                 1389258923
             );
         }
         if (strtolower($database) !== $database) {
-            throw new InvalidDatabaseNameException('Database name must be lowercase', 1389348390);
+            throw new static('Database name must be lowercase', 1389348390);
         }
     }
 }

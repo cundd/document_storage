@@ -33,6 +33,9 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         CoreDocumentRepositoryInterface $coreDocumentRepository,
     ): DocumentRepositoryInterface;
 
+    /**
+     * @return non-empty-string
+     */
     abstract protected function getTestDatabaseName(): string;
 
     public function testFindWithProperties(): void
@@ -56,6 +59,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
                     ->shouldBeCalled();
             }
         )->findWithProperties($properties);
+        $this->assertTrue(is_countable($result));
         $this->assertSame(count($documents), count($result));
     }
 
@@ -94,6 +98,7 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         } else {
             $result = $documentRepository->findAll();
         }
+        $this->assertTrue(is_countable($result));
         $this->assertSame(count($documents), count($result));
     }
 
@@ -117,6 +122,9 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         $this->assertSame($expectedCount, $result);
     }
 
+    /**
+     * @return DocumentRepositoryInterface<covariant DocumentInterface>
+     */
     protected function buildRepository(
         ?callable $configureCoreRepositoryProphecy = null,
     ): DocumentRepositoryInterface {
@@ -132,6 +140,9 @@ abstract class AbstractDocumentRepositoryCase extends TestCase
         );
     }
 
+    /**
+     * @param array<non-empty-string,mixed>|null $data
+     */
     public static function buildDocument(?array $data = null): DocumentInterface
     {
         if (null === $data) {

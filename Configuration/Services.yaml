@@ -7,6 +7,7 @@ services:
 
   Cundd\DocumentStorage\:
     resource: "../Classes/*"
+    exclude: ["../Classes/Domain/ValueObject/*", "../Classes/Domain/Model/*"]
 
   Cundd\DocumentStorage\Domain\Repository\DocumentRepositoryFactory:
     public: true
@@ -14,38 +15,43 @@ services:
   Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository:
     autowire: false
 
-  Cundd\DocumentStorage\Command\GeneralCommandController:
+  Cundd\DocumentStorage\Command\GeneralCommand:
     tags:
       - name: "console.command"
         command: "document-storage"
         description: "Create a new Document"
 
-  Cundd\DocumentStorage\Command\ListCommandController:
+  Cundd\DocumentStorage\Command\Database\ListCommand:
     tags:
       - name: "console.command"
-        command: "document-storage:list"
+        command: "document-storage:database:list"
+        aliases: ["document-storage:list"]
         description: "List all databases"
 
-  Cundd\DocumentStorage\Command\CreateCommandController:
+  Cundd\DocumentStorage\Command\Document\CreateCommand:
     tags:
       - name: "console.command"
-        command: "document-storage:create"
+        command: "document-storage:document:create"
+        aliases: ["create"]
         description: "Create a new Document"
 
-  Cundd\DocumentStorage\Command\ReadCommandController:
+  Cundd\DocumentStorage\Command\Document\ReadCommand:
     tags:
       - name: "console.command"
-        command: "document-storage:read"
+        command: "document-storage:document:read"
+        aliases: ["document-storage:read"]
         description: "Read Documents from the database"
 
-  Cundd\DocumentStorage\Command\DeleteCommandController:
+  Cundd\DocumentStorage\Command\Document\DeleteCommand:
     tags:
       - name: "console.command"
-        command: "document-storage:delete"
+        command: "document-storage:document:delete"
+        aliases: ["document-storage:delete"]
         description: "Remove a Document from the database"
 
-  Cundd\DocumentStorage\Command\GcCommandController:
+  Cundd\DocumentStorage\Command\Document\GcCommand:
     tags:
       - name: "console.command"
-        command: "document-storage:gc"
+        command: "document-storage:document:gc"
+        aliases: ["document-storage:gc"]
         description: "Permanently remove deleted Documents"

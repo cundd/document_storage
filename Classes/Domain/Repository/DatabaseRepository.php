@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Cundd\DocumentStorage\Domain\Repository;
 
+use Cundd\DocumentStorage\Constants;
 use Cundd\DocumentStorage\Domain\Model\Database;
-use Cundd\DocumentStorage\Domain\Model\Document;
 use DateTimeImmutable;
+use Exception;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Persistence\Generic\Exception;
-use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
 
 /**
  * Repository to fetch information about Databases (not the Documents inside)
  */
-class DatabaseRepository
+final class DatabaseRepository
 {
     public function __construct(private readonly ConnectionPool $connectionPool)
     {
@@ -26,39 +24,26 @@ class DatabaseRepository
      */
     public function findAll(): array
     {
-        $table = $this->getTable();
-        $queryBuilder = $this->connectionPool->getQueryBuilderForTable($table);
+        $queryBuilder = $this->connectionPool
+            ->getQueryBuilderForTable(Constants::DOCUMENTS_TABLE_NAME);
         $result = $queryBuilder->select('db as name', 'crdate as creationTime')
-            ->from($table)
+            ->from(Constants::DOCUMENTS_TABLE_NAME)
             ->orderBy('db', 'ASC')
             ->addOrderBy('crdate', 'ASC')
             ->groupBy('db')
-            ->execute();
+            ->executeQuery();
 
         $databases = [];
-        foreach ($result->fetchAll() as $row) {
+        foreach ($result->fetchAllAssociative() as $row) {
             $name = $row['name'];
             try {
                 $creationTime = new DateTimeImmutable('@' . $row['creationTime']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $creationTime = null;
             }
             $databases[] = new Database($name, $creationTime);
         }
 
         return $databases;
-    }
-
-    private function getTable(): string
-    {
-        static $table = null;
-        if (null === $table) {
-            try {
-                $table = GeneralUtility::makeInstance(DataMapper::class)->getDataMap(Document::class)->getTableName();
-            } catch (Exception $e) {
-            }
-        }
-
-        return $table;
     }
 }
