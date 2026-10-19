@@ -22,6 +22,9 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  * Generic Document Repository implementation to be used by concrete
  * implementations like `FreeDocumentRepository`or `DocumentRepository`
  *
+ * TODO: The Core Document Repository should only provide API methods that
+ * require the DatabaseName to be passed.
+ *
  * @internal
  *
  * @template T of DocumentInterface & \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface
