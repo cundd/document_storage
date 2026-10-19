@@ -15,12 +15,6 @@ services:
   Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepository:
     autowire: false
 
-  Cundd\DocumentStorage\Command\GeneralCommand:
-    tags:
-      - name: "console.command"
-        command: "document-storage"
-        description: "Create a new Document"
-
   Cundd\DocumentStorage\Command\Database\ListCommand:
     tags:
       - name: "console.command"
