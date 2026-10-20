@@ -88,7 +88,12 @@ final class CreateCommand extends AbstractCommand
 
         $decoded = json_decode($dataRaw, true);
         if (null === $decoded && 'null' !== strtolower($dataRaw)) {
-            throw new InvalidDocumentException('Invalid JSON data: ' . json_last_error_msg(), json_last_error());
+            $output->writeln('Read invalid data:');
+            $output->writeln($dataRaw);
+            throw new InvalidDocumentException(
+                'Invalid JSON data: ' . json_last_error_msg(),
+                json_last_error()
+            );
         }
 
         return $decoded;
