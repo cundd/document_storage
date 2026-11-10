@@ -10,13 +10,13 @@
     ],
     "require": {
         "php": "^8.1",
-        "typo3/cms-core": "^11.5 || ^12.4",
+        "typo3/cms-core": "^13.4 || ^14.3",
         "ext-json": "*"
     },
     "require-dev": {
         "phpspec/prophecy": "^1.17",
         "phpspec/prophecy-phpunit": "^2.0",
-        "phpunit/phpunit": "^9.6.34"
+        "phpunit/phpunit": "^12.5"
     },
     "autoload": {
         "psr-4": {

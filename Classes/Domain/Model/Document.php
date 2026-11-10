@@ -8,6 +8,8 @@ use Cundd\DocumentStorage\Constants;
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 use Cundd\DocumentStorage\Exception\InvalidIdException;
 use Cundd\DocumentStorage\Persistence\JsonSerializer;
+use DateTime;
+use TYPO3\CMS\Extbase\Attribute\ORM\Transient;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 use function is_null;
@@ -16,69 +18,76 @@ class Document extends AbstractEntity implements DocumentInterface
 {
     /**
      * ID
-     *
-     * @var string
      */
-    protected string $id = '';
+    final protected string $documentIdentifier;
 
     /**
      * Database
      *
-     * @var string
+     * @var non-empty-string
      */
-    protected string $db = '';
+    final protected string $databaseIdentifier;
 
     protected bool $deleted = false;
 
     /**
-     * Creation time
-     *
-     * @var int
+     * Creation date and time
      */
-    protected int $creationTime = 0;
+    protected DateTime $creationDateTime;
+
+    /**
+     * Modification date and time
+     */
+    protected DateTime $modificationDateTime;
+
+    /**
+     * Creation time
+     */
+    protected int $creationTime;
 
     /**
      * Modification time
-     *
-     * @var int
      */
-    protected int $modificationTime = 0;
+    protected int $modificationTime;
 
     /**
      * Document data
-     *
-     * @var string|null
      */
     protected ?string $dataProtected = null;
 
     /**
      * Unpacked Document content
      *
-     * @var array|null
+     * @var array<int|string,mixed>
      */
+    #[Transient]
     protected ?array $_dataUnpacked = null;
 
     final public function getGuid(): ?string
     {
-        $guid = $this->db . '/' . $this->id;
+        if (empty($this->databaseIdentifier) || empty($this->documentIdentifier)) {
+            return null;
+        }
 
-        return $guid !== '/' ? $guid : null;
+        $guid = $this->databaseIdentifier . '/' . $this->documentIdentifier;
+
+        return '/' !== $guid ? $guid : null;
     }
 
     final public function setId(int|string $id): void
     {
         InvalidIdException::assertValidId($id);
-        $this->id = (string)$id;
+        $this->documentIdentifier = (string) $id;
     }
 
-    final public function getId(): ?string
+    final public function getId(): string
     {
-        return $this->id;
+        return $this->documentIdentifier;
     }
 
     final public function isDeleted(): bool
     {
-        return (bool)$this->deleted;
+        return (bool) $this->deleted;
     }
 
     final public function setDeleted(bool $deleted): void
@@ -88,8 +97,6 @@ class Document extends AbstractEntity implements DocumentInterface
 
     /**
      * Set the Document's data
-     *
-     * @param string $content
      */
     final public function setDataProtected(string $content): void
     {
@@ -99,8 +106,6 @@ class Document extends AbstractEntity implements DocumentInterface
 
     /**
      * Return the Document's data
-     *
-     * @return string|null
      */
     final public function getDataProtected(): ?string
     {
@@ -110,12 +115,17 @@ class Document extends AbstractEntity implements DocumentInterface
     final public function setDb(string $db): void
     {
         InvalidDatabaseNameException::assertValidDatabaseName($db);
-        $this->db = strtolower($db);
+        $this->databaseIdentifier = strtolower($db);
     }
 
-    final public function getDb(): ?string
+    final public function getDb(): string
     {
-        return $this->db;
+        return $this->databaseIdentifier;
+    }
+
+    final public function hasDb(): bool
+    {
+        return isset($this->databaseIdentifier);
     }
 
     public function valueForKey(string $key): mixed
@@ -149,14 +159,14 @@ class Document extends AbstractEntity implements DocumentInterface
         return is_null($result) ? $default : $result;
     }
 
-    public function valueForUndefinedKey(string $key)
+    public function valueForUndefinedKey(string $key): mixed
     {
         return null;
     }
 
-    public function setValueForKey(string $key, $value): DocumentInterface
+    public function setValueForKey(string $key, mixed $value): DocumentInterface
     {
-        if ($key === Constants::DATA_PROPERTY_NAME) {
+        if (Constants::DATA_PROPERTY_NAME === $key) {
             $this->dataProtected = $value;
             $this->_dataUnpacked = null;
 
@@ -176,7 +186,6 @@ class Document extends AbstractEntity implements DocumentInterface
         $unpackedContent = $this->getUnpackedData();
         $unpackedContent[$key] = $value;
 
-        unset($this->_dataUnpacked);
         $this->_dataUnpacked = $unpackedContent;
         $this->_packContent();
 
@@ -198,14 +207,20 @@ class Document extends AbstractEntity implements DocumentInterface
         return $this->_dataUnpacked;
     }
 
-    public function __get($name)
+    /**
+     * @param non-empty-string $name
+     */
+    public function __get(string $name): mixed
     {
-        return $this->valueForKey((string)$name);
+        return $this->valueForKey((string) $name);
     }
 
-    public function __isset($name)
+    /**
+     * @param non-empty-string $name
+     */
+    public function __isset(string $name): bool
     {
-        return (bool)$this->valueForKey((string)$name);
+        return (bool) $this->valueForKey((string) $name);
     }
 
     /**

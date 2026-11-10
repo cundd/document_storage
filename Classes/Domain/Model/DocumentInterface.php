@@ -5,89 +5,80 @@ declare(strict_types=1);
 namespace Cundd\DocumentStorage\Domain\Model;
 
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
+use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 
 /**
  * Document is a flexible, schema-less object
  */
-interface DocumentInterface
+interface DocumentInterface extends DomainObjectInterface
 {
     /**
      * Return the Documents global unique identifier
-     *
-     * @return string|null
      */
     public function getGuid(): ?string;
 
     /**
      * Set the Document's ID
      *
-     * @param int|string $id
+     * @param non-empty-string $id
      */
     public function setId(int|string $id): void;
 
     /**
      * Return the Document's ID
-     *
-     * @return string
      */
     public function getId(): ?string;
 
-    /**
-     * @return bool
-     */
     public function isDeleted(): bool;
 
-    /**
-     * @param bool $deleted
-     */
     public function setDeleted(bool $deleted): void;
 
     /**
      * Set the Document's database
      *
-     * @param string $db
+     * @param non-empty-string $db
+     *
      * @throws InvalidDatabaseNameException if the given database name is not valid
      */
-    public function setDb(string $db);
+    public function setDb(string $db): void;
 
     /**
      * Return the Document's database
      *
-     * @return string|null
+     * @return non-empty-string
      */
     public function getDb(): ?string;
 
     /**
+     * Return if the Document's database is set
+     */
+    public function hasDb(): bool;
+
+    /**
      * Return the value for the given key
      *
-     * @param string $key
-     * @return mixed
+     * @param non-empty-string $key
      */
     public function valueForKey(string $key): mixed;
 
     /**
      * Return the value for the given key path (i.e. "foo.bar")
      *
-     * @param string     $keyPath
-     * @param mixed|null $default
-     * @return mixed
+     * @param non-empty-string $keyPath
      */
     public function valueForKeyPath(string $keyPath, mixed $default = null): mixed;
 
     /**
      * Invoked if a retrieved key is not defined
      *
-     * @param string $key
-     * @return null
+     * @param non-empty-string $key
      */
-    public function valueForUndefinedKey(string $key);
+    public function valueForUndefinedKey(string $key): mixed;
 
     /**
      * Set the value for the given key
      *
-     * @param string $key
-     * @param mixed  $value
-     * @return DocumentInterface
+     * @param non-empty-string $key
      */
-    public function setValueForKey(string $key, $value): DocumentInterface;
+    public function setValueForKey(string $key, mixed $value): DocumentInterface;
 }

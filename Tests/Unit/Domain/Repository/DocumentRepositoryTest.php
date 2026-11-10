@@ -11,17 +11,16 @@ use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface
 use function bin2hex;
 use function random_bytes;
 
-class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
+final class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
 {
     /**
-     * @var string
+     * @var non-empty-string
      */
-    private $testDatabaseName;
+    private string $testDatabaseName;
 
     protected function setUp(): void
     {
         parent::setUp();
-        /** @noinspection PhpUnhandledExceptionInspection */
         $this->testDatabaseName = bin2hex(random_bytes(12));
     }
 
@@ -32,9 +31,12 @@ class DocumentRepositoryTest extends AbstractDocumentRepositoryCase
     }
 
     protected function buildRepositoryWithCore(
-        CoreDocumentRepositoryInterface $coreDocumentRepository
+        CoreDocumentRepositoryInterface $coreDocumentRepository,
     ): DocumentRepositoryInterface {
-        return new DocumentRepository($this->getTestDatabaseName(), $coreDocumentRepository);
+        return new DocumentRepository( // @phpstan-ignore return.type
+            $this->getTestDatabaseName(),
+            $coreDocumentRepository // @phpstan-ignore argument.type
+        );
     }
 
     protected function getTestDatabaseName(): string

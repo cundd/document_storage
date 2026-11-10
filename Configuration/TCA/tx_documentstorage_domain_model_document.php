@@ -1,6 +1,7 @@
 <?php
+
 return [
-    'ctrl'      => [
+    'ctrl' => [
         'title'         => 'LLL:EXT:document_storage/Resources/Private/Language/locallang_db.xlf:tx_documentstorage_domain_model_document',
         'label'         => 'id',
         'tstamp'        => 'tstamp',
@@ -9,17 +10,17 @@ return [
         'delete'        => 'deleted',
         'enablecolumns' => [
         ],
-        'searchFields'  => 'id,db,data_protected',
-        'iconfile'      => 'EXT:document_storage/Resources/Public/Icons/tx_documentstorage_domain_model_document.gif',
+        'searchFields' => 'id,db,data_protected',
+        'iconfile'     => 'EXT:document_storage/Resources/Public/Icons/tx_documentstorage_domain_model_document.svg',
     ],
     'interface' => [
         'showRecordFieldList' => 'id, db, data_protected',
     ],
-    'types'     => [
+    'types' => [
         '1' => ['showitem' => 'id, db, data_protected'],
     ],
-    'columns'   => [
-        'id'             => [
+    'columns' => [
+        'id' => [
             'exclude' => false,
             'label'   => 'LLL:EXT:document_storage/Resources/Private/Language/locallang_db.xlf:tx_documentstorage_domain_model_document.id',
             'config'  => [
@@ -28,7 +29,7 @@ return [
                 'eval' => 'trim,required',
             ],
         ],
-        'db'             => [
+        'db' => [
             'exclude' => false,
             'label'   => 'LLL:EXT:document_storage/Resources/Private/Language/locallang_db.xlf:tx_documentstorage_domain_model_document.db',
             'config'  => [
@@ -47,7 +48,7 @@ return [
                 'eval' => 'trim,required',
             ],
         ],
-        'deleted'        => [
+        'deleted' => [
             'exclude' => true,
             'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.deleted',
             'config'  => [
@@ -60,6 +61,16 @@ return [
                         'invertStateDisplay' => true,
                     ],
                 ],
+            ],
+        ],
+        'crdate' => [
+            'config' => [
+                'type' => 'passthrough',
+            ],
+        ],
+        'tstamp' => [
+            'config' => [
+                'type' => 'passthrough',
             ],
         ],
     ],

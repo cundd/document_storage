@@ -2,27 +2,36 @@
 
 declare(strict_types=1);
 
-namespace Cundd\DocumentStorage\Command;
+namespace Cundd\DocumentStorage\Command\Document;
 
+use Cundd\DocumentStorage\Command\AbstractCommand;
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Exception\InvalidDocumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function file_get_contents;
 use function json_decode;
 use function json_last_error_msg;
+
 use const STDIN;
 
-class CreateCommandController extends AbstractCommandController
+final class CreateCommand extends AbstractCommand
 {
     protected function configure(): void
     {
-        $help = 'Create a new Document.';
         $this->setDescription('Create a new Document')
-            ->setHelp($help)
-            ->addArgument('database', InputArgument::REQUIRED, 'Document database')
-            ->addArgument('id', InputArgument::REQUIRED, 'Document ID')
+            ->addArgument(
+                'database',
+                InputArgument::REQUIRED,
+                'Document database'
+            )
+            ->addArgument(
+                'id',
+                InputArgument::REQUIRED,
+                'Document ID'
+            )
             ->addArgument(
                 'data',
                 InputArgument::OPTIONAL,
@@ -30,8 +39,10 @@ class CreateCommandController extends AbstractCommandController
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         $id = $input->getArgument('id');
         $db = $input->getArgument('database');
         $documentRepository = $this->getDocumentRepository();
@@ -56,8 +67,6 @@ class CreateCommandController extends AbstractCommandController
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
      * @return bool|mixed|string
      */
     protected function getData(InputInterface $input, OutputInterface $output): mixed
@@ -78,8 +87,13 @@ class CreateCommandController extends AbstractCommandController
         }
 
         $decoded = json_decode($dataRaw, true);
-        if ($decoded === null && strtolower($dataRaw) !== 'null') {
-            throw new InvalidDocumentException('Invalid JSON data: ' . json_last_error_msg(), json_last_error());
+        if (null === $decoded && 'null' !== strtolower($dataRaw)) {
+            $output->writeln('Read invalid data:');
+            $output->writeln($dataRaw);
+            throw new InvalidDocumentException(
+                'Invalid JSON data: ' . json_last_error_msg(),
+                json_last_error()
+            );
         }
 
         return $decoded;
@@ -90,7 +104,7 @@ class CreateCommandController extends AbstractCommandController
         if (function_exists('readline')) {
             return readline();
         } else {
-            return (string)stream_get_line(STDIN, 1024, PHP_EOL);
+            return (string) stream_get_line(STDIN, 1024, PHP_EOL);
         }
     }
 
@@ -98,6 +112,6 @@ class CreateCommandController extends AbstractCommandController
     {
         stream_set_blocking(STDIN, false);
 
-        return (string)file_get_contents('php://stdin');
+        return (string) file_get_contents('php://stdin');
     }
 }

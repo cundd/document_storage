@@ -18,40 +18,33 @@ trait DocumentOutputTrait
     }
 
     /**
-     * Displays information about the given Documents
+     * Display information about the given Documents
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     * @param iterable        $documents
-     * @param bool            $showBody
-     * @param array           $keyPaths
+     * @param Document[]         $documents
+     * @param non-empty-string[] $keyPaths
      */
     protected function outputDocuments(
         InputInterface $input,
         OutputInterface $output,
         iterable $documents,
         bool $showBody = false,
-        array $keyPaths = []
+        array $keyPaths = [],
     ): void {
         $this->getOutputHelper()->outputDocuments($input, $output, $documents, $showBody, $keyPaths);
     }
 
     /**
-     * Displays information about the given Document
+     * Display information about the given Document
      *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     * @param Document        $document
-     * @param bool            $showBody
-     * @param array           $keyPaths
+     * @param non-empty-string[] $keyPaths
      */
     protected function outputDocument(
         InputInterface $input,
         OutputInterface $output,
         Document $document,
         bool $showBody = false,
-        array $keyPaths = []
+        array $keyPaths = [],
     ): void {
-        $this->getOutputHelper()->outputDocument($input, $output, $document, $showBody, $keyPaths);;
+        $this->getOutputHelper()->outputDocument($input, $output, $document, $showBody, $keyPaths);
     }
 }

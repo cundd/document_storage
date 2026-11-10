@@ -21,26 +21,39 @@ use function method_exists;
 use function sprintf;
 use function ucfirst;
 
-class OutputHelper implements OutputHelperInterface
+final class OutputHelper implements OutputHelperInterface
 {
+    /**
+     * @param Document[]         $documents
+     * @param non-empty-string[] $keyPaths
+     */
     public function outputDocuments(
         InputInterface $input,
         OutputInterface $output,
         iterable $documents,
         bool $showBody = false,
-        array $keyPaths = []
+        array $keyPaths = [],
     ): void {
         foreach ($documents as $document) {
-            $this->outputDocument($input, $output, $document, $showBody, $keyPaths);
+            $this->outputDocument(
+                $input,
+                $output,
+                $document,
+                $showBody,
+                $keyPaths
+            );
         }
     }
 
+    /**
+     * @param non-empty-string[] $keyPaths
+     */
     public function outputDocument(
         InputInterface $input,
         OutputInterface $output,
         Document $document,
         bool $showBody = false,
-        array $keyPaths = []
+        array $keyPaths = [],
     ): void {
         $output->writeln(
             '<info>'
@@ -51,12 +64,17 @@ class OutputHelper implements OutputHelperInterface
 
         if ($keyPaths) {
             foreach ($keyPaths as $keyPath) {
-                $output->writeln(sprintf('Data for key-path <options=bold>%s</>:', $keyPath));
+                $output->writeln(sprintf(
+                    'Data for key-path <options=bold>%s</>:',
+                    $keyPath
+                ));
                 $data = $this->resolveKeyPath($document, $keyPath);
                 $this->writeOutput($input, $output, $data);
             }
         } elseif ($showBody) {
-            $data = $document->getDataProtected() ? json_decode((string)$document->getDataProtected(), true) : [];
+            $data = $document->getDataProtected()
+                ? json_decode((string) $document->getDataProtected(), true)
+                : [];
             $this->writeOutput($input, $output, $data);
         }
     }
@@ -71,46 +89,65 @@ class OutputHelper implements OutputHelperInterface
      * Return a formatted json-encoded version of the given data
      *
      * @param mixed $data The data to format
-     * @param bool  $withColors
-     * @return string
      */
     private function formatJsonData(mixed $data, bool $withColors = true): string
     {
         return (new JsonFormatter())->formatJsonData($data, $withColors);
     }
 
+    /**
+     * @return mixed[]
+     */
     private function resolveKeyPath(Document $document, string $keyPath): ?array
     {
         $asteriskCount = substr_count($keyPath, '*');
-        if ($asteriskCount === 0) {
+        if (0 === $asteriskCount) {
             return $this->valueForKeyPath($document, $keyPath);
         }
 
-        if ($asteriskCount === 1) {
+        if (1 === $asteriskCount) {
             [$lead, $tail] = explode('*', $keyPath, 2);
             $leadKeyPath = rtrim($lead, '.');
-            $leadResult = $document->valueForKeyPath($leadKeyPath, NotFoundException::instance());
 
-            if ($leadResult === null) {
+            if (empty($leadKeyPath)) {
+                throw new UnexpectedValueException(sprintf(
+                    'Lead key-path must not be empty. Lead "%s" given',
+                    $lead
+                ));
+            }
+
+            $leadResult = $document->valueForKeyPath(
+                $leadKeyPath,
+                NotFoundException::instance()
+            );
+
+            if (null === $leadResult) {
                 return null;
             }
             if (!is_iterable($leadResult)) {
-                throw new UnexpectedValueException(sprintf('Data of lead key-path "%s" is not iterable', $leadKeyPath));
+                throw new UnexpectedValueException(sprintf(
+                    'Data of lead key-path "%s" is not iterable',
+                    $leadKeyPath
+                ));
             }
 
             return $this->valueForAsteriskKeyPath($leadResult, ltrim($tail, '.'));
         }
 
-        throw new InvalidArgumentException('Maximum of one asterisk in key-path is supported');
+        throw new InvalidArgumentException(
+            'Maximum of one asterisk in key-path is supported'
+        );
     }
 
     /**
-     * @param iterable $leadResult
-     * @param string   $keyPath
-     * @return array
+     * @param iterable<int,mixed> $leadResult
+     *
+     * @return list<mixed>
      */
-    private function valueForAsteriskKeyPath(iterable $leadResult, string $keyPath): array
-    {
+    private function valueForAsteriskKeyPath(
+        iterable $leadResult,
+        string $keyPath,
+    ): array {
         if ('' === $keyPath) {
             $container = [];
             array_push($container, ...$leadResult);
@@ -121,21 +158,22 @@ class OutputHelper implements OutputHelperInterface
         $result = [];
         foreach ($leadResult as $item) {
             if ($keyPath) {
-                $result[] = $this->valueForKeyPath($item, $keyPath, NotFoundException::instance());
+                $result[] = $this->valueForKeyPath(
+                    $item,
+                    $keyPath,
+                    NotFoundException::instance()
+                );
             }
         }
 
         return $result;
     }
 
-    /**
-     * @param mixed  $input
-     * @param string $keyPath
-     * @param null   $default
-     * @return mixed
-     */
-    private function valueForKeyPath(mixed $input, string $keyPath, $default = null): mixed
-    {
+    private function valueForKeyPath(
+        mixed $input,
+        string $keyPath,
+        mixed $default = null,
+    ): mixed {
         return array_reduce(
             explode('.', $keyPath),
             function ($carry, string $key) use ($default) {
@@ -145,7 +183,9 @@ class OutputHelper implements OutputHelperInterface
 
                 if (is_object($carry)) {
                     $getterName = 'get' . ucfirst($key);
-                    if (is_callable([$carry, $getterName]) && method_exists($carry, $getterName)) {
+
+                    if (method_exists($carry, $getterName)
+                        && is_callable([$carry, $getterName])) {
                         return $carry->$getterName();
                     }
 
@@ -160,7 +200,7 @@ class OutputHelper implements OutputHelperInterface
         );
     }
 
-    protected function writeOutput(InputInterface $input, OutputInterface $output, mixed $data): void
+    private function writeOutput(InputInterface $input, OutputInterface $output, mixed $data): void
     {
         $format = $input->hasArgument('format') ? $input->getArgument('format') : 'json';
         switch ($format) {

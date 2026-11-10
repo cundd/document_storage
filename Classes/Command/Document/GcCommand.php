@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cundd\DocumentStorage\Command;
+namespace Cundd\DocumentStorage\Command\Document;
 
+use Cundd\DocumentStorage\Command\AbstractCommand;
 use Cundd\DocumentStorage\Service\GcService;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,19 +14,30 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 
-class GcCommandController extends AbstractCommandController
+final class GcCommand extends AbstractCommand
 {
     protected function configure(): void
     {
         $help = 'Permanently delete all Documents marked as "deleted" from the database.';
         $this->setDescription('Permanently remove deleted Documents')
             ->setHelp($help)
-            ->addArgument('database', InputArgument::OPTIONAL, 'Name of the database')
-            ->addOption('min-age', 'a', InputOption::VALUE_REQUIRED, 'Minimum age in days of the Documents to delete');
+            ->addArgument(
+                'database',
+                InputArgument::OPTIONAL,
+                'Name of the database'
+            )
+            ->addOption(
+                'min-age',
+                'a',
+                InputOption::VALUE_REQUIRED,
+                'Minimum age in days of the Documents to delete'
+            );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         $db = $input->getArgument('database');
         $minAge = $this->getMinAge($input);
 

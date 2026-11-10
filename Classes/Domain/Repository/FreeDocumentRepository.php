@@ -6,12 +6,14 @@ namespace Cundd\DocumentStorage\Domain\Repository;
 
 use Cundd\DocumentStorage\Domain\Model\Document;
 use Cundd\DocumentStorage\Domain\Model\DocumentInterface;
+use Cundd\DocumentStorage\Domain\ValueObject\DatabaseName;
 use Cundd\DocumentStorage\Exception\InvalidDatabaseNameException;
 use Cundd\DocumentStorage\Exception\NoDatabaseSelectedException;
 use Cundd\DocumentStorage\Persistence\Repository\AbstractBridge;
 use Cundd\DocumentStorage\Persistence\Repository\CoreDocumentRepositoryInterface;
 use InvalidArgumentException;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
+
 use function is_string;
 
 /**
@@ -20,30 +22,33 @@ use function is_string;
  * Managed Documents can belong to any Database. This Repository is more kind of a Object Storage than a traditional
  * Repository.
  * To focus on a single Database use the `DocumentRepository` or the `AbstractDocumentRepository`.
+ *
+ * @template T of DocumentInterface
+ *
+ * @extends AbstractBridge<T>
  */
 class FreeDocumentRepository extends AbstractBridge
 {
     /**
      * Construct a new Document Repository
-     *
-     * @param CoreDocumentRepositoryInterface $baseRepository
-     * @param string                          $objectType
      */
     public function __construct(
         CoreDocumentRepositoryInterface $baseRepository,
-        string $objectType = Document::class
+        string $objectType = Document::class,
     ) {
         parent::__construct($baseRepository, $objectType);
     }
 
     /**
-     * @param string $uid The identifier of the object to find
-     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     * @param non-empty-string|int $uid The identifier of the object to find
+     *
+     * @return T|null The matching object if found, otherwise NULL
+     *
      * @see findByIdentifier()
      */
     public function findByUid($uid): ?DocumentInterface
     {
-        return $this->findByIdentifier($uid);
+        return $this->findByIdentifier((string) $uid);
     }
 
     /**
@@ -51,8 +56,9 @@ class FreeDocumentRepository extends AbstractBridge
      *
      * In contrast to the default Repositories the method requires the argument to be a GUID string
      *
-     * @param string $identifier The identifier of the object to find
-     * @return DocumentInterface|null The matching object if found, otherwise NULL
+     * @param non-empty-string $identifier The identifier of the object to find
+     *
+     * @return T|null The matching object if found, otherwise NULL
      */
     public function findByIdentifier($identifier): ?DocumentInterface
     {
@@ -68,69 +74,73 @@ class FreeDocumentRepository extends AbstractBridge
     /**
      * Return all objects of the given Document database
      *
-     * @param string $database
-     * @return DocumentInterface[]|QueryResultInterface
+     * @return T[]|QueryResultInterface<int,T>
      */
     public function findByDatabase(string $database): QueryResultInterface|array
     {
-        InvalidDatabaseNameException::assertValidDatabaseName($database);
-
-        return $this->baseRepository->findByDatabase($database);
+        return $this->baseRepository->findByDatabase(
+            new DatabaseName($database)
+        );
     }
 
     /**
      * Count all objects of the given Document database
-     *
-     * @param string $database
-     * @return int
      */
     public function countByDatabase(string $database): int
     {
-        InvalidDatabaseNameException::assertValidDatabaseName($database);
-
-        return $this->baseRepository->countByDatabase($database);
+        return $this->baseRepository->countByDatabase(
+            new DatabaseName($database)
+        );
     }
 
     /**
      * Remove all Documents from the given database
-     *
-     * @param string $database
-     * @return void
      */
     public function removeAllFromDatabase(string $database): void
     {
-        InvalidDatabaseNameException::assertValidDatabaseName($database);
-
-        $this->baseRepository->removeAllFromDatabase($database);
+        $this->baseRepository->removeAllFromDatabase(
+            new DatabaseName($database)
+        );
     }
 
-    public function findAll(string $database = null)
+    /**
+     * @param non-empty-string $database
+     */
+    public function findAll(?string $database = null)
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
-        return $this->baseRepository->findByDatabase($database);
+        return $this->baseRepository->findByDatabase(
+            new DatabaseName($database)
+        );
     }
 
-    public function countAll(string $database = null): int
+    public function countAll(?string $database = null): int
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
-        return $this->baseRepository->countByDatabase($database);
+        return $this->baseRepository->countByDatabase(
+            new DatabaseName($database)
+        );
     }
 
-    public function removeAll(string $database = null): void
+    public function removeAll(?string $database = null): void
     {
         InvalidDatabaseNameException::assertValidDatabaseName($database);
 
-        $this->baseRepository->removeAllFromDatabase($database);
+        $this->baseRepository->removeAllFromDatabase(
+            new DatabaseName($database)
+        );
     }
 
-    public function findWithProperties(array $properties, int $limit = PHP_INT_MAX): iterable
-    {
+    public function findWithProperties(
+        array $properties,
+        int $limit = PHP_INT_MAX,
+    ): iterable {
         if (isset($properties['db'])) {
-            $database = $properties['db'];
+            $database = (string) $properties['db'];
         } elseif (isset($properties['database'])) {
-            $database = $properties['database'];
+            $database = (string) $properties['database'];
         } else {
             throw new NoDatabaseSelectedException('Missing key "database"');
         }

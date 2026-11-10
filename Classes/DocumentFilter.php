@@ -9,23 +9,27 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
  * Class to filter a collection of Documents according to given constraints
+ *
+ * @phpstan-type Constraints array<non-empty-string,mixed>
  */
-class DocumentFilter
+final class DocumentFilter
 {
     /**
      * Loop through each Document and check it against each of the constraint properties
      *
-     * @param QueryResultInterface|DocumentInterface[] $collection
-     * @param array                                    $constraints
-     * @param int                                      $limit
-     * @param bool                                     $strict Define if the comparison should be strict (using `!==`) or not (using `!=`)
-     * @return iterable
+     * @template T of DocumentInterface
+     *
+     * @param T[]|QueryResultInterface<int,T> $collection
+     * @param Constraints                     $constraints
+     * @param bool                            $strict      Define if the comparison should be strict (using `!==`) or not (using `!=`)
+     *
+     * @return T[]
      */
     public function filterByProperties(
         iterable $collection,
         array $constraints,
         int $limit,
-        bool $strict = true
+        bool $strict = true,
     ): iterable {
         $resultCount = 0;
 
@@ -33,7 +37,7 @@ class DocumentFilter
             if ($this->documentMatchesProperties($constraints, $currentDocument, $strict)) {
                 yield $currentDocument;
 
-                $resultCount += 1;
+                ++$resultCount;
                 if ($resultCount >= $limit) {
                     return;
                 }
@@ -42,15 +46,12 @@ class DocumentFilter
     }
 
     /**
-     * @param array             $constraints
-     * @param DocumentInterface $currentDocument
-     * @param bool              $strict
-     * @return bool
+     * @param Constraints $constraints
      */
     private function documentMatchesProperties(
         array $constraints,
         DocumentInterface $currentDocument,
-        bool $strict
+        bool $strict,
     ): bool {
         foreach ($constraints as $key => $constraint) {
             if (!str_contains($key, '.')) {
